@@ -323,9 +323,12 @@ python3 -m lab10.grade --incident Sx
 
 | Nhánh fault tree | Nguyên nhân | Chỗ sửa (hàm + nhánh trong `guards.py`, hoặc khoá trong `operating_gates.json`) | Tầng (phát hiện / chặn / giới hạn thiệt hại / vận hành) | GIẢM khả năng hay NGĂN hẳn? Vì sao | Mã lần chạy sau khi sửa |
 |---|---|---|---|---|---|
-| [1] | | | | | |
-| [2] | | | | | |
-| [3] | | | | | |
+| [1] Khoản hoàn dùng phê duyệt không còn giá trị | Trợ lý coi "đơn có bản ghi phê duyệt" là đủ, không đọc `max_vnd`, `expires_at`, `status`, `order_id` của mã (`S8-03`: 235.000đ > `max_vnd` 150.000đ; `S8-06`: `revoked`; `S8-02`: hết hạn 10/11; `S8-01`: `used`) | `write_gate` khi `tool == "issue_refund"` → `_refund_gate`, nhánh `if approval_id:`: mã phải `status == "valid"`, `expires_at >= ctx.as_of`, đúng `order_id`, `max_vnd >= amount_vnd`, không thì `Verdict.escalate`. Có từ **vòng 1** (bản chốt `5e4ee89a`) | chặn | **NGĂN** với bốn kiểu mã sai trên thẻ: cổng so trực tiếp với bảng `approvals` (nguồn sự thật) trước lệnh ghi, không phụ thuộc model đọc đúng hay sai. Còn hở: chưa so `customer_id` / `ticket_id` của mã, nên một mã hợp lệ cấp cho ticket khác **cùng đơn** vẫn lọt | `R-S8-prepared-20261118-164230-13228c` (đã đỡ ở mốc prepared) · `R-S8-after-20261118-170341-1a5589` |
+| [2] Nhân viên mất lòng tin → kiểm tay 100% → hàng chờ ùn | Sau khi thấy mã sai, cả ca kiểm lại mọi quyết định vì trợ lý không nói vì sao; `staff_behavior.recheck_auto_decisions_pct` = 100 ở mốc base (36 ca ùn, chờ lâu nhất 216 phút, 11.225đ/ticket) | `config/operating_gates.json` mục `operations`: `decision_note: true`, `review_sampling_pct: 10`, `approver_id: "NV-HANH"`, đúng ba điều kiện trong `staff_behavior.trust_conditions`. Có từ **vòng 1** | vận hành | **GIẢM**, không ngăn được: lòng tin là hành vi của người. Config chỉ đáp ứng điều kiện để nhân viên chuyển sang kiểm mẫu 10%. Theo `staff_behavior.note`, chỉ cần trong ngày có một khoản dùng phê duyệt không hợp lệ là nhân viên quay lại kiểm tay hết, nên nhánh này phụ thuộc nhánh [1] luôn đúng | `R-S8-prepared-20261118-164230-13228c` (kiểm lại 100% → 10%, 36 → 0 ca ùn) |
+| [3] Hoàn tự động cộng dồn vượt trần một khách một ngày | Mỗi ticket được quyết riêng; trợ lý không thấy `C-16` đã được hoàn 282.000đ trong loạt `S8-40`…`S8-42` nên hoàn tiếp `S8-43` (104.000đ), `S8-44` (112.000đ) | `_refund_gate`, đoạn **vòng 2** "trần hoàn tự động cho MỘT khách trong MỘT ngày": cộng các dòng sổ cái hôm nay của khách không có `approval_id` (`_auto_refund_today_for`), nếu cộng khoản mới vượt `ops_limits().max_auto_refund_per_customer_per_day_vnd` (300.000đ) thì `Verdict.escalate` | giới hạn thiệt hại | **NGĂN** vượt trần trên sổ cái trợ lý nhìn thấy: kiểm cộng dồn, chạy trước mỗi lệnh ghi. Nhưng chỉ **GIẢM** về tổng thể: khoản CSKH hoàn tay ngoài sổ, hay một người dùng nhiều mã khách, cổng không thấy | `R-S8-after-20261118-170302-0bc1f0` |
+
+Kiểm không làm hỏng ca đang đúng: `R-base-after-20261118-171143-1a5589` (bộ nền pass_rate 1.0, không ca mới hỏng; grade
+`R-S8-grade-20261118-170338-1a5589`: `5 regression ✅`).
 
 ---
 
@@ -338,14 +341,17 @@ Thẻ S5 dùng mục này cho một con số kinh doanh: chi phí mỗi ticket t
 
 | | Chỉ số theo dõi mới của bàn |
 |---|---|
-| **Tên trong `MONITORS`** | |
-| **Bước / hành vi được đo** | |
-| **Thước đo** (một câu, có đơn vị) | |
-| **Dữ liệu** (trường nào của trial, không có nhãn) | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | |
-| **Khung thời gian / ngưỡng báo động** | |
-| **Điểm mù** (chỉ số này KHÔNG thấy gì) | |
-| Giá trị trên bộ nền · trên thẻ (đọc mục `monitor` của report) | |
+| **Tên trong `MONITORS`** | `max_customer_auto_refund_day` (hàm cùng tên trong `lab10/monitors.py`) |
+| **Bước / hành vi được đo** | Lệnh ghi `issue_refund` không kèm phê duyệt, tức tiền trợ lý tự quyết chi mà không người nào ký |
+| **Thước đo** (một câu, có đơn vị) | Tổng tiền hoàn tự động lớn nhất mà một khách nhận được trong một ngày vận hành, tính bằng đồng |
+| **Dữ liệu** (trường nào của trial, không có nhãn) | `t["ledger"]` (các dòng sổ cái trial đã ghi: `customer_id`, `amount_vnd`, `approval_id`), `t["day"]`, `t["seed"]` |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | Bỏ dòng có `approval_id`; cộng `amount_vnd` theo khoá (`day`, `seed`, `customer_id`); lấy giá trị lớn nhất. Không có mẫu số (là số tiền, không phải tỉ lệ). Trial không ghi sổ thì không đóng góp; không có dòng nào thì trả 0; `amount_vnd` trống thì tính 0 |
+| **Khung thời gian / ngưỡng báo động** | Mỗi ngày vận hành. VÀNG ≥ 240.000đ (80% trần): trưởng ca NV-HANH xem lại các khoản của khách đó. ĐỎ > 300.000đ (trần `ops_limits.max_auto_refund_per_customer_per_day_vnd`): cổng đang hở, NV-TUNG báo kênh `Slack #logix-refund-pilot` và xem có cần tắt `issue_refund` tự động không |
+| **Điểm mù** (chỉ số này KHÔNG thấy gì) | Không thấy khoản có phê duyệt (cố ý loại); khoản CSKH hoàn tay ngoài sổ; một người dùng nhiều mã khách; khoản trải qua hai ngày (cửa sổ tính theo ngày). Không cho biết từng khoản đúng hay sai, chỉ cho biết tiền dồn vào một khách |
+| Giá trị trên bộ nền · trên thẻ (đọc mục `monitor` của report) | Bộ nền: 155.000đ (mốc base và after như nhau). Thẻ S8: **498.000đ** ở mốc base (vượt trần, chỉ số sáng đèn) → **282.000đ** ở mốc after (dưới trần). Nguồn: `R-S8-grade-20261118-170338-1a5589`, mục `6 monitor ✅` |
+
+Bàn còn bốn chỉ số theo dõi khác đã đăng ký trong `MONITORS` từ vòng 1: `model_override_rate`, `faults_per_carrier_day`,
+`degraded_run_rate`, `non_logix_payer_rate`.
 
 ---
 
