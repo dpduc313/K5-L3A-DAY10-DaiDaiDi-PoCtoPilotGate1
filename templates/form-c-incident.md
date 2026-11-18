@@ -271,7 +271,7 @@ Vì sao có thể sai: ngoài thực tế trưởng ca hay thu hồi hoặc đ�
 
 <a id="c6"></a>
 
-## C6 · Câu 3.4 · Fault tree TRƯỚC khi sửa (mã lần chạy: `__________`)
+## C6 · Câu 3.4 · Fault tree TRƯỚC khi sửa (mã lần chạy: `R-S8-before-20261118-164230-13228c`)
 
 **Khung tư duy.** Đi từ **tác hại** ngược về nguyên nhân, không đi từ lỗi mình tình cờ thấy. Mỗi tầng hỏi "điều gì phải xảy
 ra thì điều trên mới xảy ra", nối bằng **HOẶC** (một trong các nhánh là đủ) hoặc **VÀ** (phải đồng thời). Một biện pháp tốt
@@ -286,21 +286,37 @@ thường biến một nhánh HOẶC thành VÀ: tác hại chỉ còn xảy ra 
 Ít nhất hai nhánh ở hai tầng khác nhau (kỹ thuật, kinh doanh, con người); mỗi lá có bằng chứng (ticket@seed, trường dữ liệu, hoặc một dòng của report).
 
 ```
-[ĐỈNH] Tác hại: ______________________________ (cho ai: __________, đo bằng: __________)
+[ĐỈNH] Tác hại: trưởng ca đứng tên những khoản chị không duyệt, cả ca bỏ sang kiểm tay, pilot tốn hơn làm tay
+       (cho ai: NV-HANH, nhân viên CSKH, LogiX; đo bằng: wrongful_refund_vnd 6.845.000đ, kiểm lại 100%,
+        36 ca ùn, chờ lâu nhất 216 phút, 11.225đ/ticket > làm tay 10.000đ, ROI -2.45)
  └─ HOẶC
- ├─ [1] ______________________________ tầng: đầu vào / data / hành động / quyền hạn / vận hành / kinh doanh
- │ └─ vì: ________________________ bằng chứng: ticket ______@seed ____
- ├─ [2] ______________________________ tầng: ______
- │ └─ vì: ________________________ bằng chứng: ticket ______@seed ____
- └─ [3] ______________________________ tầng: ______
- └─ vì: ________________________ bằng chứng: ______
+ ├─ [1] Khoản hoàn ghi phê duyệt của NV-HANH bằng một mã không còn giá trị          tầng: quyền hạn
+ │   └─ HOẶC
+ │      ├─ mã duyệt mức thấp hơn khoản chi     bằng chứng: S8-03@11 (A-2803 max_vnd 150000, chi 235000)
+ │      ├─ mã đã bị thu hồi                    bằng chứng: S8-06@11 (A-2806 status revoked)
+ │      ├─ mã đã hết hạn                       bằng chứng: S8-02@11 (A-2802 expires_at 2026-11-10)
+ │      ├─ mã đã dùng cho ticket cũ             bằng chứng: S8-01@11 (A-2801 status used, ticket T-OLD-2801)
+ │      └─ mã cấp cho đơn khác của cùng khách   bằng chứng: S8-04@11 (A-2804 cấp cho O-2808, dùng cho O-2804)
+ │   └─ vì: trợ lý coi "đơn có bản ghi phê duyệt" là được phép (sự kiện approval_used), và không có cổng nào
+ │          giữa bảng approvals và lệnh ghi issue_refund
+ ├─ [2] Cả ca kiểm tay mọi quyết định tự động, hàng chờ ùn                          tầng: vận hành / con người
+ │   └─ VÀ
+ │      ├─ nhân viên đã thấy khoản dùng mã sai (nhánh [1] xảy ra)
+ │      ├─ quyết định không kèm giải thích: operations.decision_note = false (mặc định)
+ │      └─ không có quy trình kiểm mẫu đã thống nhất: operations.review_sampling_pct = 0
+ │   └─ vì: điều kiện tin của nhân viên (staff_behavior.trust_conditions) không đạt nên
+ │          recheck_auto_decisions_pct = 100, kể cả khoản nhỏ đúng như S8-60@11 (16.000đ)
+ │      bằng chứng: report base "nhân viên kiểm lại quyết định tự động (%) 100", "số ca bị ùn 36", chờ lâu nhất 216.0
+ └─ [3] Hoàn tự động cộng dồn vượt trần một khách một ngày                          tầng: kinh doanh
+     └─ vì: mỗi ticket quyết riêng, không cộng sổ cái theo khách; trần 300.000đ chỉ nằm trong ops_limits
+        bằng chứng: S8-43@11, S8-44@11 (C-16 đã nhận 86.000 + 94.000 + 102.000 = 282.000đ từ S8-40…S8-42)
 ```
 
 | Lá | Specification bị vi phạm (phần mềm phải làm gì) | Giả định môi trường đã sai (thế giới ngoài phần mềm) |
 |---|---|---|
-| [1] | | |
-| [2] | | |
-| [3] | | |
+| [1] | Mọi khoản hoàn ghi `approval_id` phải dùng mã `status = valid`, `expires_at` không trước ngày hôm nay, đúng `order_id`, và `max_vnd ≥ amount_vnd`, kiểm trước khi ghi sổ | "Mã có trong bảng phê duyệt thì vẫn còn dùng được". Ngoài đời trưởng ca thu hồi, mã hết hạn, mã cấp cho ca khác, mà trợ lý không được báo |
+| [2] | Mỗi quyết định tự động phải kèm ghi chú giải thích, và tỉ lệ kiểm mẫu không dưới mức đã thống nhất (10%), với người duyệt đứng tên là trưởng ca | "Nhân viên sẽ tin trợ lý nếu đa số kết quả đúng". Ngoài đời chỉ vài khoản sai mà người đứng tên phải giải trình là đủ để cả ca kiểm tay lại hết |
+| [3] | Tổng hoàn tự động (không phê duyệt) cho một khách trong một ngày không vượt `ops_limits.max_auto_refund_per_customer_per_day_vnd` = 300.000đ | "Mỗi khách gửi một ticket mỗi ngày, các ticket độc lập với nhau". Ngoài đời một khách mua nhiều đơn trong một đợt và khiếu nại hàng loạt |
 
 **Ví dụ mẫu một nhánh (bộ nền, đừng chép):** đỉnh "hãng VNX nhận lỗi oan cho đơn O-1002" ← [1] agent dùng độ trễ 5 ngày ←
 model lấy số trong ticket đè lên DB (`T-002@55`). Spec bị vi phạm: độ trễ dùng để ghi lỗi phải lấy từ tracking DB. Giả định
@@ -323,7 +339,7 @@ python3 -m lab10.grade --incident Sx
 
 | Nhánh fault tree | Nguyên nhân | Chỗ sửa (hàm + nhánh trong `guards.py`, hoặc khoá trong `operating_gates.json`) | Tầng (phát hiện / chặn / giới hạn thiệt hại / vận hành) | GIẢM khả năng hay NGĂN hẳn? Vì sao | Mã lần chạy sau khi sửa |
 |---|---|---|---|---|---|
-| [1] Khoản hoàn dùng phê duyệt không còn giá trị | Trợ lý coi "đơn có bản ghi phê duyệt" là đủ, không đọc `max_vnd`, `expires_at`, `status`, `order_id` của mã (`S8-03`: 235.000đ > `max_vnd` 150.000đ; `S8-06`: `revoked`; `S8-02`: hết hạn 10/11; `S8-01`: `used`) | `write_gate` khi `tool == "issue_refund"` → `_refund_gate`, nhánh `if approval_id:`: mã phải `status == "valid"`, `expires_at >= ctx.as_of`, đúng `order_id`, `max_vnd >= amount_vnd`, không thì `Verdict.escalate`. Có từ **vòng 1** (bản chốt `5e4ee89a`) | chặn | **NGĂN** với bốn kiểu mã sai trên thẻ: cổng so trực tiếp với bảng `approvals` (nguồn sự thật) trước lệnh ghi, không phụ thuộc model đọc đúng hay sai. Còn hở: chưa so `customer_id` / `ticket_id` của mã, nên một mã hợp lệ cấp cho ticket khác **cùng đơn** vẫn lọt | `R-S8-prepared-20261118-164230-13228c` (đã đỡ ở mốc prepared) · `R-S8-after-20261118-170341-1a5589` |
+| [1] Khoản hoàn dùng phê duyệt không còn giá trị | Trợ lý coi "đơn có bản ghi phê duyệt" là đủ, không đọc `max_vnd`, `expires_at`, `status`, `order_id` của mã (`S8-03`: 235.000đ > `max_vnd` 150.000đ; `S8-06`: `revoked`; `S8-02`: hết hạn 10/11; `S8-01`: `used`; `S8-04`: mã cấp cho đơn `O-2808`) | `write_gate` khi `tool == "issue_refund"` → `_refund_gate`, nhánh `if approval_id:`: mã phải `status == "valid"`, `expires_at >= ctx.as_of`, đúng `order_id`, `max_vnd >= amount_vnd`, không thì `Verdict.escalate`. Có từ **vòng 1** (bản chốt `5e4ee89a`) | chặn | **NGĂN** với năm kiểu mã sai trên thẻ: cổng so trực tiếp với bảng `approvals` (nguồn sự thật) trước lệnh ghi, không phụ thuộc model đọc đúng hay sai. Còn hở: chưa so `customer_id` / `ticket_id` của mã, nên một mã hợp lệ cấp cho ticket khác **cùng đơn** vẫn lọt | `R-S8-prepared-20261118-164230-13228c` (đã đỡ ở mốc prepared) · `R-S8-after-20261118-170341-1a5589` |
 | [2] Nhân viên mất lòng tin → kiểm tay 100% → hàng chờ ùn | Sau khi thấy mã sai, cả ca kiểm lại mọi quyết định vì trợ lý không nói vì sao; `staff_behavior.recheck_auto_decisions_pct` = 100 ở mốc base (36 ca ùn, chờ lâu nhất 216 phút, 11.225đ/ticket) | `config/operating_gates.json` mục `operations`: `decision_note: true`, `review_sampling_pct: 10`, `approver_id: "NV-HANH"`, đúng ba điều kiện trong `staff_behavior.trust_conditions`. Có từ **vòng 1** | vận hành | **GIẢM**, không ngăn được: lòng tin là hành vi của người. Config chỉ đáp ứng điều kiện để nhân viên chuyển sang kiểm mẫu 10%. Theo `staff_behavior.note`, chỉ cần trong ngày có một khoản dùng phê duyệt không hợp lệ là nhân viên quay lại kiểm tay hết, nên nhánh này phụ thuộc nhánh [1] luôn đúng | `R-S8-prepared-20261118-164230-13228c` (kiểm lại 100% → 10%, 36 → 0 ca ùn) |
 | [3] Hoàn tự động cộng dồn vượt trần một khách một ngày | Mỗi ticket được quyết riêng; trợ lý không thấy `C-16` đã được hoàn 282.000đ trong loạt `S8-40`…`S8-42` nên hoàn tiếp `S8-43` (104.000đ), `S8-44` (112.000đ) | `_refund_gate`, đoạn **vòng 2** "trần hoàn tự động cho MỘT khách trong MỘT ngày": cộng các dòng sổ cái hôm nay của khách không có `approval_id` (`_auto_refund_today_for`), nếu cộng khoản mới vượt `ops_limits().max_auto_refund_per_customer_per_day_vnd` (300.000đ) thì `Verdict.escalate` | giới hạn thiệt hại | **NGĂN** vượt trần trên sổ cái trợ lý nhìn thấy: kiểm cộng dồn, chạy trước mỗi lệnh ghi. Nhưng chỉ **GIẢM** về tổng thể: khoản CSKH hoàn tay ngoài sổ, hay một người dùng nhiều mã khách, cổng không thấy | `R-S8-after-20261118-170302-0bc1f0` |
 
@@ -357,23 +373,32 @@ Bàn còn bốn chỉ số theo dõi khác đã đăng ký trong `MONITORS` từ
 
 <a id="c9"></a>
 
-## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `__________`)
+## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S8-after-20261118-170341-1a5589`)
 
 Vẽ lại cây ở C6. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [gate … hỏng]` và ghi:
 
 ```
-[ĐỈNH] ______________________________
+[ĐỈNH] Trưởng ca đứng tên khoản chị không duyệt, cả ca kiểm tay, pilot tốn hơn làm tay
+       (sau khi sửa: wrongful_refund_vnd 0, kiểm lại 10%, 0 ca ùn, chờ lâu nhất 5 phút, 2.952đ/ticket)
  └─ HOẶC
- ├─ [1] ______________ VÀ [gate ______ hỏng]
- ├─ [2] ______________ VÀ [gate ______ hỏng]
- └─ [3] ______________ (còn hở?)
+ ├─ [1] Khoản hoàn dùng mã phê duyệt không còn giá trị
+ │      VÀ [gate _refund_gate nhánh approval_id hỏng]                  (vòng 1, đã đỡ ở mốc prepared)
+ │      ├─ còn hở: mã valid, còn hạn, đúng đơn nhưng cấp cho ticket / khách khác của cùng đơn
+ │      └─ còn hở: trưởng ca thu hồi mã SAU lúc cổng đọc bảng approvals
+ ├─ [2] Cả ca kiểm tay, hàng chờ ùn
+ │      VÀ [nhánh [1] lọt]                                             (nhân viên chỉ quay lại kiểm tay khi thấy mã sai)
+ │      VÀ [config decision_note / review_sampling_pct / approver_id bị đổi]  (vòng 1)
+ └─ [3] Hoàn tự động cộng dồn vượt trần một khách một ngày
+        VÀ [gate _refund_gate trần theo khách hỏng]                    (vòng 2)
+        ├─ phát hiện: monitor max_customer_auto_refund_day (498.000đ → 282.000đ, trần 300.000đ)
+        └─ còn hở: khoản CSKH hoàn tay ngoài sổ cái; một người dùng nhiều mã khách
 ```
 
 | Nhánh | Gate (hàm trong `guards.py` / khoá config / metric trong `monitors.py`) | Tầng gate (phát hiện / chặn / giới hạn thiệt hại / vận hành) | Giảm hay ngăn? Vì sao | Nhánh còn hở |
 |---|---|---|---|---|
-| [1] | | | | |
-| [2] | | | | |
-| [3] | | | | |
+| [1] | `write_gate` → `_refund_gate`, nhánh `if approval_id:` (so `status`, `expires_at`, `order_id`, `max_vnd` với bảng `approvals`) | chặn | **Ngăn** cả năm kiểu mã sai trên thẻ: cổng đọc nguồn sự thật ngay trước lệnh ghi, không phụ thuộc model. `S8-01`…`S8-04`, `S8-06` đều chuyển người ở mốc prepared | Chưa so `customer_id` / `ticket_id` của mã với ticket đang xử lý; mã bị thu hồi giữa lúc kiểm và lúc ghi |
+| [2] | `config/operating_gates.json`: `operations.decision_note = true`, `review_sampling_pct = 10`, `approver_id = "NV-HANH"` | vận hành | **Giảm**: config chỉ đáp ứng điều kiện tin của nhân viên (report "Niềm tin của nhân viên duyệt: đạt", kiểm lại 100% → 10%). Lòng tin vẫn là hành vi của người: một khoản mã sai lọt qua [1] là cả ca quay lại kiểm tay | Phụ thuộc [1] luôn đúng; chưa có monitor riêng đếm phê duyệt bị từ chối để báo cho trưởng ca |
+| [3] | `_refund_gate`, đoạn vòng 2 trần theo khách (`_auto_refund_today_for` + `ops_limits().max_auto_refund_per_customer_per_day_vnd`) · metric `max_customer_auto_refund_day` | giới hạn thiệt hại (cổng) · phát hiện (metric) | **Ngăn** vượt trần trên sổ cái trợ lý thấy: cổng cộng dồn trước mỗi lệnh ghi (`S8-43`, `S8-44` chuyển người). Tổng thể chỉ **giảm**: phần ngoài sổ cổng không thấy | Hoàn tay ngoài sổ; một người nhiều mã khách; khoản trải qua hai ngày |
 
 ---
 
