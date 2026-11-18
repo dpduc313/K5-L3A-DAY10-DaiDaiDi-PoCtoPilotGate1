@@ -53,19 +53,26 @@ Chạy **trước khi sửa bất cứ thứ gì**:
 python3 -m lab10.grade --incident Sx
 ```
 
-- Mã lần chạy grade: `__________` · base: `__________` · prepared: `__________`
-- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): …
-- Khối kinh doanh và vận hành còn dòng nào vượt trần: …
+- Mã lần chạy grade: `R-S8-grade-20261118-164228-13228c` · base: `R-S8-before-20261118-164230-13228c` · prepared: `R-S8-prepared-20261118-164230-13228c`
+- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): đỡ cả ba ô **chặn**, **giới hạn thiệt hại** và **vận hành** trên gói nhìn thấy.
+  - Chặn: pass_rate 0.8654 → 0.9615. Năm ticket dùng mã phê duyệt sai (`S8-01`…`S8-04`, `S8-06`) đều chuyển người nhờ nhánh `approval_id` của `_refund_gate`.
+  - Giới hạn thiệt hại: hoàn sai 6.845.000đ → 1.080.000đ; lỗi oan cho hãng 35 → 10.
+  - Vận hành: nhân viên kiểm lại 100% → 10%; số ca ùn 36 → 0; chờ lâu nhất 216 → 4 phút; chi phí 11.225đ → 2.575đ/ticket; ROI -2.45 → 1.27; số kho đắt hơn làm tay 4 → 0. Đây là nhờ `decision_note`, `review_sampling_pct`, `approver_id` trong `operating_gates.round1.json` khớp `staff_behavior.trust_conditions`.
+- Khối kinh doanh và vận hành còn dòng nào vượt trần: không còn dòng "vượt trần" kinh doanh / vận hành nào. Nhưng còn **hai ngưỡng đã ký chưa đạt**: `wrongful_refund_vnd` 1.080.000 (≤ 0) và `wrongful_carrier_faults` 10 (≤ 0), đều do `S8-43`, `S8-44` (khách `C-16` cộng dồn vượt trần 300.000đ/ngày). Vì vậy report ghi "KHÔNG đủ căn cứ để chọn Tiếp tục".
 
 **Mở lại pre-mortem (Phiếu B mục B6), viết bằng bút khác màu.** Với thẻ S1, S3, S4, S5 đây là một phần của phần riêng theo thẻ.
 
-- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? …
-- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới? …
+- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? **Con người và vận hành** là chính: trưởng ca mất lòng tin, cả ca kiểm tay, hàng chờ ùn. Gốc ở **kỹ thuật** (trợ lý dùng mã phê duyệt không còn giá trị). Hệ quả ở **kinh doanh** (11.225đ/ticket, đắt hơn làm tay). Còn chạm **pháp lý**: người đứng tên duyệt phải giải trình khoản chị không ký.
+- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới?
+  - **Có, hai phần ba.** B6 dòng "Con người và vận hành" viết gần đúng nguyên văn thẻ: *"CSKH không tin trợ lý nên tự kiểm lại mọi quyết định, không tiết kiệm được gì"*, và đã chọn cổng config `decision_note`, `review_sampling_pct = 10`, `approver_id = NV-HANH`. Ở mốc prepared, nhân viên kiểm lại 100% → 10%, 36 → 0 ca ùn.
+  - Mã phê duyệt sai nằm ở B4, dòng `approval_id · INVALID` (mã `A-0031` đã dùng, hết hạn), và cổng 2 đã kiểm `status`, `expires_at`, `order_id`, `max_vnd`. Năm ticket dùng mã sai của thẻ đều bị chặn ở mốc prepared.
+  - **Không lường trước:** hoàn tự động **cộng dồn** cho một khách trong ngày (`S8-43`, `S8-44`, còn 1.080.000đ hoàn sai và 10 lỗi oan ở mốc prepared). Vì sao bàn không nghĩ tới: cả HAZOP (B4) lẫn pre-mortem (B6) đều soi **một lệnh ghi của một ticket**, chưa xét nhiều ticket hợp lệ cộng lại. Trần 300.000đ/khách/ngày có trong `ops_limits` nhưng bàn chỉ đưa trần theo hãng (`max_auto_strikes_per_carrier_per_day`) vào cổng 3. Bộ nền có khách gửi hai ticket trong ngày (ví dụ `C-01` với `O-1001`, `O-1017`) nhưng tổng hoàn tự động cho một khách tối đa chỉ 155.000đ (monitor `max_customer_auto_refund_day`), chưa chạm trần, nên trace không gợi ý.
 - Lý do còn thiếu, thêm bây giờ:
 
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được bằng gì (trace / data / config nào) |
 |---|---|---|
-| | | |
+| Một khách mua nhiều đơn trong một đợt rồi khiếu nại cùng lúc; từng khoản đúng chính sách nhưng cộng lại vượt trần 300.000đ/khách/ngày mà không ai duyệt | Kinh doanh | `ops_limits.max_auto_refund_per_customer_per_day_vnd`; sổ cái theo `customer_id`; trace `S8-43@11`; monitor `max_customer_auto_refund_day` (498.000đ ở mốc base của S8) |
+| Trưởng ca thu hồi hoặc sửa mức một mã phê duyệt mà không ai báo cho trợ lý, nên quyết định của người không có hiệu lực với máy | Con người và vận hành | `approvals[].status` (`revoked`), `max_vnd`; trace `S8-06@11`, `S8-03@11`; dòng "Niềm tin của nhân viên duyệt" trong report grade |
 
 ---
 
