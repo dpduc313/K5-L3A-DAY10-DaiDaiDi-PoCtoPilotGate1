@@ -30,10 +30,16 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 
 | # | Mã lần chạy | Bộ ticket · mốc | Đổi MỘT thứ gì so với lần trước | pass_rate (khoảng tin cậy 95%) | pass_k | Hoàn sai (đ) · lỗi hãng oan · lộ dữ liệu | Tỉ lệ chuyển người | Kết luận (một câu) |
 |---|---|---|---|---|---|---|---|---|
-| 1 | | Sx · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | | | | | |
-| 2 | | Sx · after | | | | | | |
-| 3 | | Sx · after | | | | | | |
-| 4 | | base · after | (kiểm không regression) | | | | | |
+| 0 | `R-S8-before-20261118-164230-13228c` | S8 · base | (đối chứng: không có cổng nào) | 0.8654 [0.7692; 0.9423] | 0.8654 | 6845000 · 35 · 0 | 0.0 | Không có cổng, trợ lý tự quyết mọi ca, dùng cả phê duyệt hết hạn / đã thu hồi / sai ticket: hoàn sai 6,8 triệu đồng, 35 lỗi oan cho hãng, nhân viên kiểm tay 100%, 36 ca ùn |
+| 1 | `R-S8-prepared-20261118-164230-13228c` | S8 · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt `5e4ee89a`) | 0.9615 [0.9038; 1.0] | 0.9615 | 1080000 · 10 · 0 | 0.0962 | Cổng vòng 1 (kiểm phê duyệt còn hạn, đúng đơn, đủ tiền; ghi chú giải thích) đỡ phần lớn sự cố, còn hỏng `S8-43`, `S8-44`: cùng khách `C-16` được hoàn tự động cộng dồn vượt trần 300.000đ/ngày |
+| 2 | `R-S8-after-20261118-170302-0bc1f0` | S8 · after | Cổng tiền thêm trần hoàn tự động 300.000đ/khách/ngày (`ops_limits.max_auto_refund_per_customer_per_day_vnd`), vượt thì chuyển người | 1.0 [1.0; 1.0] | 1.0 | 0 · 0 · 0 | 0.1346 | Hết hoàn sai và lỗi oan; tỉ lệ chuyển người tăng 0.0962 → 0.1346 vì các khoản vượt trần giờ có người duyệt, vẫn dưới 0.25 |
+| 3 | `R-S8-after-20261118-170341-1a5589` | S8 · after | Thêm monitor `max_customer_auto_refund_day` (không đổi hành vi trợ lý) | 1.0 [1.0; 1.0] | 1.0 | 0 · 0 · 0 | 0.1346 | Kết quả giống lần 2; monitor sáng đèn: 498.000đ (S8, không cổng) so với 155.000đ (bộ nền), về 282.000đ sau khi sửa. Tự kiểm `R-S8-grade-20261118-170338-1a5589`: mọi ngưỡng đã ký đạt |
+| 4 | `R-base-after-20261118-171143-1a5589` | base · after | (kiểm không regression) | 1.0 [1.0; 1.0] | 1.0 | 0 · 0 · 0 | 0.2273 | Bộ nền không ca nào mới hỏng, tỉ lệ chuyển người giữ 0.2273 như mốc prepared |
+
+**Ghi chú về ô `1 integrity ❌` trong report tự kiểm.** Ô này báo 28 file của `incidents/S1`–`S7` "bị đổi" vì repo của bàn
+không có các thư mục đó. Bàn làm theo README của repo thẻ ("mỗi bàn chỉ lấy đúng thư mục thẻ của bàn mình") nên chỉ lấy
+`incidents/S8/` (commit `8073208` "Nhận thẻ S8"). Bốn file của S8 khớp đúng hash trong `lab10/MANIFEST.json`; mọi file khoá khác
+(agent, tools, eval, data, tests) và bản chốt vòng 1 vẫn còn nguyên.
 
 ---
 
