@@ -64,18 +64,34 @@ Phiếu A mục A1–A5; Phiếu B mục B0–B2, B7.1, B8 (v1); Phiếu C mục
 
 ### Phần việc phụ trách
 
-Vai Sản phẩm và kinh doanh (đổi vai với Thành khoảng 15:50, xem ghi chú ở trên). PIC dòng 2 (Dữ liệu), 6 (Chi phí),
-9 (Quyết định) của checklist Phiếu B mục B5; PIC ký quyết định v2 ở Phiếu C mục C12; PIC hai dòng risk register ở Phiếu C
-mục C10 (cộng dồn theo khách, kho `?`).
+Vai Sản phẩm và kinh doanh (đổi vai với Thành khoảng 15:50, xem ghi chú ở trên). Phiếu B mục B3 (bản đồ dữ liệu), B6
+(pre-mortem), B7.4 (cổng kinh doanh: các con số mục `business` của `config/operating_gates.json`); Phiếu C mục C5 câu 3.2
+(specification) và C7 dòng [3] (nhánh kinh doanh). PIC dòng 2 (Dữ liệu), 6 (Chi phí), 9 (Quyết định) của checklist Phiếu B
+mục B5; PIC ký quyết định v2 ở Phiếu C mục C12; PIC hai dòng risk register ở Phiếu C mục C10 (cộng dồn theo khách, kho `?`).
 
 ### Đóng góp cụ thể
 
+- **B3, bản đồ dữ liệu:** người dùng, đầu ra (4 lệnh ghi), các bảng trợ lý đọc, trường then chốt và trường nào là nguồn
+  sự thật; ví dụ drift REFUND-v3 → REFUND-v4 ngày 01/12/2026.
+- **B6, pre-mortem bốn lăng kính:** các lý do thất bại viết ở thì quá khứ, trong đó có kho `?` tốn 10.359đ/ticket, ca trực
+  một người ùn vào ngày sale, nhân viên mất lòng tin; chọn dòng kinh doanh thành cổng `business`.
+- **B7.4, cổng kinh doanh:** `daily_refund_cap_vnd` 1.600.000đ (80% ngân sách Finance 2.000.000đ),
+  `cost_budget_per_ticket_vnd` 1.500đ (bằng trần tiền LLM), `pilot_scope` all/100%, `roi_min` 0,25 (bằng ngưỡng đã ký), mỗi
+  số kèm lý do.
+- **C5 câu 3.2:** specification "khoản vượt hạn mức tự động chỉ được ghi khi có phê duyệt còn giá trị cho đúng khoản đó;
+  không có thì chuyển NV-HANH", kiểm bằng `write_gate` và dòng "Niềm tin của nhân viên duyệt" của report.
+- **C7 dòng [3]:** chỉ ra không con số `business` nào là nguyên nhân của thẻ S8 (chi phí 11.225đ/ticket ở mốc base là do
+  nhân viên kiểm tay 100%), nên giữ nguyên mục `business`.
 - Theo dõi ngưỡng chi phí và ROI đã ký (`cost_per_ticket_vnd_max` 8.000đ, `roi_min` 0,25) so với report; kho `?`
   10.359đ/ticket là lý do của quyết định Thu hẹp ở v1 và v2.
 - Báo đổi vai ở issue #6.
 
 ### Bằng chứng
 
+- Nhánh `Vox304` của repo (tài khoản GitHub `azirTHEKING`): commit `0cd2e49` (17:25, Phiếu B mục B3, B6, B7.4),
+  `a1e1938` (17:35, Phiếu C mục C5 câu 3.2, PR #10), `ba41537` (17:44, Phiếu C mục C7 dòng [3], PR #11). Nhánh này chưa
+  được gộp vào `main`: bản B3, B6, B7.4 trên `main` là bản gộp ở commit `b6a74cd`, còn C5 câu 3.2 và C7 trên `main` là bản
+  viết sau. Mở nhánh `Vox304` để xem đúng phần Minh viết.
 - Phiếu B mục B5, các dòng 2, 6, 9 (cột PIC); Phiếu C mục C11 (checklist cập nhật, dòng 6 và 9); Phiếu C mục C12 (PIC ký).
 
 ### Exit ticket
