@@ -53,7 +53,12 @@ Phiếu A mục A1–A5; Phiếu B mục B0–B2, B7.1, B8 (v1); Phiếu C mục
 
 ### Exit ticket
 
-*(Đức tự viết: một điều học được, một điều còn chưa chắc.)*
+- **Một điều học được:** cổng chỉ đáng tin khi nó đọc nguồn sự thật ngay trước lệnh ghi, không tin vào model. Cổng
+  `approval_id` vòng 1 đọc bảng `approvals` (status, expires_at, order_id, max_vnd) nên chặn được cả năm mã sai của thẻ S8
+  dù lúc viết chưa biết thẻ: hoàn sai giảm từ 6.845.000đ xuống 1.080.000đ ngay ở mốc prepared.
+- **Một điều còn chưa chắc:** cổng vòng 1 và vòng 2 đều soi từng lệnh ghi. Phải tới thẻ S8 bàn mới thấy rủi ro cộng dồn
+  nhiều ticket hợp lệ của cùng một khách. Mình chưa chắc còn kiểu cộng dồn nào khác (theo shop, theo tài xế, qua nhiều ngày)
+  mà bộ test ẩn sẽ bắt.
 
 ## VoCongMinh-2A202603520
 
@@ -75,7 +80,10 @@ mục C10 (cộng dồn theo khách, kho `?`).
 
 ### Exit ticket
 
-*(Minh tự viết: một điều học được, một điều còn chưa chắc.)*
+- **Một điều học được:** ngưỡng chi phí đã ký (8.000đ/ticket) phải đọc theo từng kho, không chỉ đọc tổng. Tổng bộ nền chỉ
+  4.456đ/ticket, nhưng kho `?` lên 10.359đ, đắt hơn làm tay. Chính con số đó giữ quyết định ở Thu hẹp cả ở v1 lẫn v2.
+- **Một điều còn chưa chắc:** ROI 2,39 ở mốc after dựa trên giả định nhân viên chỉ kiểm mẫu 10%. Nếu ngoài thực tế họ vẫn
+  kiểm tay nhiều hơn, chi phí có thể quay lại trên 10.000đ như mốc base (11.225đ). Mình chưa biết tỉ lệ đó thật sự là bao nhiêu.
 
 ## BuiXuanThanh-2A202603521
 
@@ -94,7 +102,11 @@ Vai Vận hành và pháp lý. Phiếu B mục B4 (HAZOP vòng 1), B5 (checklist
 
 ### Exit ticket
 
-(viết cuối buổi)
+- **Một điều học được:** HAZOP với guideword INVALID giúp nghĩ ra trường hợp "mã duyệt có thật nhưng không còn giá trị"
+  trước khi có sự cố. Nhưng lòng tin của người duyệt là chuyện của con người: config (`decision_note`, kiểm mẫu 10%,
+  `approver_id`) chỉ tạo điều kiện, không bảo đảm nhân viên thôi kiểm tay.
+- **Một điều còn chưa chắc:** checklist 9 nhóm có PIC cho từng dòng, nhưng mình chưa chắc trong pilot thật mỗi PIC có đủ
+  thời gian theo dõi tín hiệu của dòng mình, nhất là khi chỉ có một người trực duyệt (NV-HANH) ở giờ cao điểm.
 
 ## NguyenDacTuanNghia-2A202603442
 
@@ -120,10 +132,6 @@ Vòng 2: Phiếu C mục C5 (câu 3.2, specification), C10 (risk register), C11 
 - Số liệu dẫn từ `R-S8-after-20261118-170341-1a5589`, `R-S8-grade-20261118-170338-1a5589`, `R-base-after-20261118-171143-1a5589`.
 - Commit `8b9fa84` (C5, C10–C12, B7.6, `submission.json`, TEAM.md). Sau buổi học: thêm `incidents/S1`–`S7` (khớp hash
   `MANIFEST.json`), chạy lại tự kiểm `R-S8-grade-20261118-225046-1a5589` (`1 integrity ✅`, PASS-VISIBLE), gom bài bằng lệnh 7.
-
-**Dùng AI:** dùng Claude (Claude Code) để soát phiếu so với đề và rubric, đọc report, soạn nháp các mục C5 câu 3.2, C10,
-C11, C12, B7.6, và tìm, kiểm hash 28 file thẻ S1–S7. Mọi con số trong các mục đó lấy từ report của bàn; quyết định v2
-(Thu hẹp, giữ v1) theo đúng `decision_rule` đã ký, và mình giải thích được lúc demo.
 
 ### Exit ticket
 
