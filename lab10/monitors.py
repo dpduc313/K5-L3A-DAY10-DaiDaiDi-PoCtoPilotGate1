@@ -48,11 +48,25 @@ def non_logix_payer_rate(trials):
     return sum(hit(t) for t in trials) / max(1, len(trials))
 
 
+def max_customer_auto_refund_day(trials):
+    """Tổng tiền hoàn TỰ ĐỘNG (không có phê duyệt) lớn nhất cho MỘT khách trong MỘT ngày vận hành (cùng day + seed).
+    Trần đã thống nhất với Ops/Finance: 300.000đ/khách/ngày. Vượt mức này là dấu hiệu tiền chảy ra mà không ai duyệt (thẻ S8)."""
+    total = {}
+    for t in trials:
+        for r in t.get("ledger") or []:
+            if r.get("approval_id"):
+                continue
+            key = (t.get("day"), t.get("seed"), r.get("customer_id"))
+            total[key] = total.get(key, 0) + int(r.get("amount_vnd") or 0)
+    return max(total.values(), default=0)
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
     "model_override_rate": model_override_rate,
     "faults_per_carrier_day": faults_per_carrier_day,
     "degraded_run_rate": degraded_run_rate,
     "non_logix_payer_rate": non_logix_payer_rate,
+    "max_customer_auto_refund_day": max_customer_auto_refund_day,
 }
 STARTER_MONITORS = ("escalation_rate",)
