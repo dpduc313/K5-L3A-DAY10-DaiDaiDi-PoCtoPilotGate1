@@ -150,7 +150,7 @@ Chỗ hai cột lệch nhau chính là nơi đặt gate.
 | Ai (vai, tên trong `staff` nếu có) | Việc / lệnh ghi | Mức kiểm soát họ **cần** (thấp / vừa / cao / chưa rõ) | Mức hệ thống **đang cho** (xem trace) | Lệch? |
 |---|---|---|---|---|
 | | `issue_refund` dưới hạn mức tự động | | | |
-| | `issue_refund` trên hạn mức tự động (S8 chỉ điền dòng này) | | | |
+| Trưởng ca CSKH, NV-HANH (Trần Thị Hạnh), người đứng tên duyệt | `issue_refund` trên hạn mức tự động (S8 chỉ điền dòng này): khoản trên `auto_limit_vnd` 200.000đ của REFUND-v3 | **Cao**: chị đứng tên và phải giải trình với kiểm toán từng khoản | Mốc base: **không có**. Trợ lý tự lấy một mã có sẵn trong `approvals` rồi ghi 228.000–235.000đ mà không qua chị (`S8-01`…`S8-06@11` đều có `approval_used`, trong đó 5 mã không còn hiệu lực) | **Lệch** → gate trả quyền về NV-HANH: mã sai một trong bốn điều kiện (`status`, `expires_at`, `order_id`, `max_vnd`) thì chuyển người (B7.1 cổng 2) |
 | | `issue_refund` mà người trả là shop | | | |
 | | nhiều khoản hoàn tự động cho một khách trong ngày | | | |
 | | | | | |
@@ -208,16 +208,16 @@ Cùng cách làm như C3.3. Mốc "tin quá mức" là trước kiểm toán, m�
 
 | Mốc | Nhóm | Tình huống cụ thể (lấy từ thẻ / ticket) | Dữ liệu của hệ thống liên quan (trường nào, đi tới đâu) | Điều người đó biết / không biết |
 |---|---|---|---|---|
-| **Tin quá mức** (trước kiểm toán) | nhân viên duyệt | | | |
-| **Tin quá mức** (trước kiểm toán) | trưởng ca đứng tên | | | |
-| **Không tin** (sau kiểm toán) | nhân viên duyệt | | | |
-| **Không tin** (sau kiểm toán) | trưởng ca đứng tên | | | |
-| **Tin vừa đủ** (trạng thái muốn tới) | cả hai | | | |
+| **Tin quá mức** (trước kiểm toán) | nhân viên duyệt | Trước 16/11 nhân viên không kiểm lại quyết định tự động nào (`staff_behavior.recheck_auto_decisions_pct = 0` trong `data/world.json`), kể cả khoản 230.000đ của `S8-01`, `S8-06` | `approval_used` → `issue_refund.approval_id` → sổ cái; khách chỉ nhận câu "LogiX đã hoàn …", không có lý do | Biết: khoản có mã duyệt của NV-HANH thì coi là đã duyệt. Không biết: hệ thống không kiểm mã còn hiệu lực không |
+| **Tin quá mức** (trước kiểm toán) | trưởng ca đứng tên | NV-HANH cấp mã cho từng ticket: A-2802 cho `S8-02` hạn 10/11, A-2803 tối đa 150.000đ, A-2806 sau đó đã thu hồi; chị tin mỗi mã chỉ dùng đúng ticket, đúng hạn, đúng mức | `approvals.approver_id = NV-HANH` được chép theo `approval_id` vào sổ cái, nên tên chị đứng trên khoản chi | Không biết: trợ lý lấy mã theo khách và đơn có sẵn, không đọc `status`, `expires_at`, `max_vnd`; không có ghi chú quyết định nào để chị soát |
+| **Không tin** (sau kiểm toán) | nhân viên duyệt | Sau kiểm toán cả ca kiểm tay 100% (`world_patch.staff_behavior.recheck_auto_decisions_pct = 100`): mốc base của bộ S8 có 52/52 ticket vào hàng chờ, chờ trung bình 107 phút, lâu nhất 216 phút, 36 ca bị ùn, chi phí 11.225đ/ticket > làm tay 10.000đ, ROI −2,45 | Không có `decision_note` nên mỗi ca phải tra lại từ đầu; các ticket nhỏ `S8-60`…`S8-99` không dùng mã duyệt vẫn bị kiểm | Biết: có khoản sai. Không biết: khoản nào đúng (`S8-05` dùng A-2805 hợp lệ vẫn bị kiểm lại) |
+| **Không tin** (sau kiểm toán) | trưởng ca đứng tên | Chị phải giải trình 5 khoản không duyệt: `S8-01` (A-2801 đã dùng cho T-OLD-2801), `S8-02` (A-2802 hết hạn 10/11), `S8-03` (235.000đ > `max_vnd` 150.000đ của A-2803), `S8-04` (A-2804 cấp cho đơn O-2808, không phải O-2804), `S8-06` (A-2806 đã `revoked`) | `approval_id` trong sổ cái không kèm lý do kiểm; không có chỉ số nào báo "khoản dùng mã không hợp lệ" | Biết: tên mình nằm trên khoản không duyệt. Không biết: hệ thống lấy mã kiểu gì, đã sửa chưa, bao giờ được thôi kiểm tay |
+| **Tin vừa đủ** (trạng thái muốn tới) | cả hai | Đúng bốn điều kiện trong `staff_behavior.trust_conditions`: (1) mỗi quyết định có ghi chú giải thích; (2) kiểm mẫu ≥ 10%; (3) người duyệt đứng tên là NV-HANH; (4) trong ngày không còn khoản hoàn nào dùng phê duyệt không hợp lệ | Cổng `issue_refund` chỉ nhận mã đủ 4 điều kiện, sai → chuyển NV-HANH; config `operations.decision_note = true`, `review_sampling_pct = 10`, `approver_id = NV-HANH` | Biết: vì sao từng khoản được duyệt; mã sai không bao giờ thành khoản chi. Giữ quyền: mọi khoản trên hạn mức và mọi mã sai đều quay về NV-HANH |
 
 **Rút ra:**
-- Dữ liệu nào của hệ thống làm lòng tin lệch: `__________`.
+- Dữ liệu nào của hệ thống làm lòng tin lệch: bảng `approvals` (trợ lý dùng `approval_id` mà không kiểm `status`, `expires_at`, `order_id`, `max_vnd`) và việc thiếu `decision_note`: tên `approver_id = NV-HANH` đi thẳng vào sổ cái mà không kèm lý do.
 - Để người duyệt thôi kiểm tay từng quyết định, họ cần **thấy** gì ở mỗi quyết định, cần **giữ quyền** ở đâu, và
-  tỉ lệ kiểm mẫu nào hai bên chấp nhận: `__________`. Ghi các con số đó vào `config/operating_gates.json` mục `operations`.
+  tỉ lệ kiểm mẫu nào hai bên chấp nhận: **thấy** ghi chú giải thích ở mỗi quyết định (số ngày trễ theo DB, chính sách, mã duyệt và vì sao hợp lệ); **giữ quyền** ở mọi khoản trên hạn mức 200.000đ và mọi mã duyệt sai một điều kiện (chuyển về NV-HANH); **kiểm mẫu 10%** quyết định tự động (bằng `min_sampling_pct` trong `staff_behavior`). Config hiện tại: `operations.decision_note = true`, `operations.review_sampling_pct = 10`, `operations.approver_id = "NV-HANH"`. Chạy thử trên bản sao (chưa phải số chính thức của bàn): nhân viên kiểm lại giảm từ 100% xuống 10%, hàng chờ lâu nhất 5 phút, 0 ca ùn, chi phí 2.952đ/ticket, ROI 2,39. Đức chạy lại lệnh 2 và lệnh 6 rồi ghi mã lần chạy chính thức vào C0. Ghi các con số đó vào `config/operating_gates.json` mục `operations`.
 - Kèm **một dòng** "`issue_refund` trên hạn mức tự động" ở bảng C3.1 Bước 2.
 
 ### C3.5 · Mở lại bản đồ dữ liệu (S1, S3, S5; viết bằng bút khác màu)
@@ -237,13 +237,15 @@ Mở lại Phiếu B mục B3. Ghi ở đây những dòng đổi so với vòng
 
 *Mục riêng, không ghi đè HAZOP vòng 1 ở Phiếu B mục B4. Năm guideword và nghĩa của chúng: xem Phiếu B mục B4.*
 
-Tool chọn phân tích: `________________`
+Tool chọn phân tích: `issue_refund` (tham số `approval_id`, `amount_vnd`)
 
 | Tham số / dòng dữ liệu | Guideword (WRONG / INVALID / INCOMPLETE / PERTURBED / INCAPABLE) | Lệch cụ thể (mã ticket, trường dữ liệu của thẻ) | Hậu quả, cho ai | Hiện có gì ngăn? | Gate đề xuất + tầng |
 |---|---|---|---|---|---|
-| | | | | | |
-| | | | | | |
-| | | | | | |
+| `approval_id` | INVALID (đã dùng / đã thu hồi) | `S8-01@11` dùng A-2801 (`status: used`, cấp cho T-OLD-2801); `S8-06@11` dùng A-2806 (`status: revoked`). Mốc base vẫn hoàn 230.000đ mỗi ca | NV-HANH đứng tên khoản mình không duyệt; LogiX mất 230.000đ mỗi ca; nhân viên mất lòng tin, chuyển sang kiểm tay 100% | Cổng vòng 1 kiểm `status = valid` (B4 đã dự báo nhánh này) | Giữ cổng (**chặn**); thêm chỉ số "tỉ lệ khoản hoàn dùng mã không hợp lệ" (**phát hiện**) để báo NV-HANH trong ngày |
+| `approval_id` | INVALID (hết hạn, sai đối tượng) | `S8-02@11` dùng A-2802 hết hạn 10/11 (hôm nay 16/11); `S8-04@11` dùng A-2804 cấp cho đơn O-2808, không phải O-2804 (cùng khách C-11) | Như trên, 228.000–230.000đ mỗi ca | Cổng vòng 1 kiểm `expires_at ≥ hôm nay` và đúng `order_id` | Giữ cổng (**chặn**) |
+| `amount_vnd` so với `max_vnd` | WRONG | `S8-03@11`: A-2803 chỉ duyệt tới 150.000đ, khoản chi 235.000đ | Phần vượt 85.000đ không ai duyệt nhưng mang tên NV-HANH | Cổng vòng 1 kiểm `max_vnd ≥ amount_vnd` | Giữ cổng (**chặn**); không tự cắt về 150.000đ, vì số tiền vượt là việc người duyệt quyết |
+| `approval_id` | INVALID (sai ticket, đúng đơn) · **nhánh chưa thấy trên trace** | Một mã còn `valid`, đúng `order_id`, đủ `max_vnd` nhưng cấp cho **ticket khác** của cùng đơn (khách gửi lại ticket thứ hai). Cổng hiện chỉ so `order_id`, không so `ticket_id` hay `customer_id` | Một mã duyệt có thể dùng cho hai khoản; NV-HANH lại đứng tên khoản thứ hai | Chưa có: cổng không đọc `approvals.ticket_id` | Kiểm thêm `ticket_id` (hoặc `customer_id`) của mã khớp ticket đang xử lý, sai → chuyển NV-HANH (**chặn**); Đức quyết có thêm vào `write_gate` không |
+| Người duyệt NV-HANH (ngoài code) | INCAPABLE | Sau kiểm toán nhân viên kiểm tay 100%: mốc base 52 ca/ngày vào hàng chờ, 1 người × 6 ca/giờ, 36 ca bị ùn, lâu nhất 216 phút | Khách chờ hàng giờ; chi phí 11.225đ/ticket > làm tay; ROI −2,45 | Chưa có ở mốc base | `operations.decision_note = true` + `review_sampling_pct = 10` để nhân viên chuyển sang kiểm mẫu (**giới hạn thiệt hại**, tầng vận hành) |
 
 Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chưa thấy trên trace** lúc viết.
 
@@ -261,9 +263,9 @@ Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): …
 
 ### Câu 3.3 · Một giả định về môi trường mà người thiết kế đã ngầm tin, nhưng nhiều khả năng sai ngoài thực tế
 
-Giả định (thứ nằm NGOÀI phần mềm): …
+Giả định (thứ nằm NGOÀI phần mềm): bảng `approvals` luôn phản ánh đúng ý người duyệt, ngay lúc trợ lý đọc nó. Mã bị thu hồi thì `status` đổi ngay, mã đã dùng thì không ai dùng lại, và mỗi mã NV-HANH cấp chỉ gắn với đúng một ticket của đúng một đơn.
 
-Vì sao có thể sai: …
+Vì sao có thể sai: ngoài thực tế trưởng ca hay thu hồi hoặc đổi mức duyệt qua điện thoại, Zalo rồi mới cập nhật hệ thống sau; nhiều bảng của LogiX chỉ cập nhật theo mẻ đêm (như `refund_status`). Thẻ S8 cho thấy bảng `approvals` đã có mã `used`, `revoked`, hết hạn, cấp cho đơn khác mà vẫn nằm sẵn để trợ lý lấy. Nếu bảng chậm vài giờ, cổng kiểm `status` vẫn cho qua một mã vừa bị thu hồi, nên cổng chỉ **giảm** khả năng chứ không **ngăn** hẳn; cần thêm kiểm mẫu 10% và chỉ số theo dõi trong ngày.
 
 ---
 
