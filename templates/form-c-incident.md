@@ -317,7 +317,7 @@ python3 -m lab10.grade --incident Sx
 |---|---|---|---|---|---|
 | [1] | | | | | |
 | [2] | | | | | |
-| [3] | | | | | |
+| [3] Kinh doanh: chi phí và trần tiền | Ở mốc base gói S8, nhân viên kiểm tay 100% quyết định tự động nên chi phí 11.225đ/ticket > làm tay 10.000đ, ROI −2,45, 4 kho đắt hơn làm tay. Tổng hoàn tự động 498.000đ/ngày, vẫn dưới trần. Không con số `business` nào là nguyên nhân | **Giữ nguyên `business`**, kèm số: `daily_refund_cap_vnd` 1.600.000 (gói S8 hoàn tự động 498.000đ = 31% trần) · `cost_budget_per_ticket_vnd` 1.500 (ticket đắt nhất 769đ) · `pilot_scope` all (ở prepared không kho nào đắt hơn làm tay: CT 752đ, DN 3.200đ, HCM 2.116đ, HN 1.411đ) · `roi_min` 0,25 (prepared 1,27). Trần 300.000đ/khách/ngày (`ops_limits`) không có khoá trong `business`, nên nhánh cộng dồn sửa ở code (nhánh [1]) | Giới hạn thiệt hại (trần tiền ngày) | **GIẢM**: trần 1.600.000đ chỉ chặn tổng thiệt hại của một ngày, không chặn từng khoản sai (ngày tệ nhất hoàn sai 216.000đ, vẫn dưới trần). Chi phí về 2.575đ/ticket là nhờ điều kiện niềm tin ở `operations` (ghi chú giải thích, kiểm mẫu 10%), không nhờ `business` | `R-S8-after-20261118-170902-13228c` (`business` không đổi; cập nhật mã sau lần đo after cuối) |
 
 ---
 
