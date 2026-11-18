@@ -15,7 +15,7 @@ Họ tên đầy đủ và MSSV của **mọi** thành viên; thêm dòng nếu 
 | --: | --------- | ---- | --- | :---------: |
 |   1 | Đậu Phúc Đức | 2A202603580 | Kỹ sư cổng | ✓ |
 |   2 | Minh (chờ họ tên đầy đủ) | (chờ) | Sản phẩm và kinh doanh | |
-|   3 | Thành (chờ họ tên đầy đủ) | (chờ) | Vận hành và pháp lý | |
+|   3 | Bùi Xuân Thành | 2A202603521 | Vận hành và pháp lý | |
 |   4 | Nghĩa (chờ họ tên đầy đủ) | (chờ) | Vận hành và pháp lý | |
 
 **Ghi chú về đổi vai.** Lúc ký tiêu chí (commit `2eb05b8`, 15:17:15) bàn đang phân Thành vai Sản phẩm và kinh doanh, Minh vai
