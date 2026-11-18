@@ -35,11 +35,16 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 | 2 | `R-S8-after-20261118-170302-0bc1f0` | S8 · after | Cổng tiền thêm trần hoàn tự động 300.000đ/khách/ngày (`ops_limits.max_auto_refund_per_customer_per_day_vnd`), vượt thì chuyển người | 1.0 [1.0; 1.0] | 1.0 | 0 · 0 · 0 | 0.1346 | Hết hoàn sai và lỗi oan; tỉ lệ chuyển người tăng 0.0962 → 0.1346 vì các khoản vượt trần giờ có người duyệt, vẫn dưới 0.25 |
 | 3 | `R-S8-after-20261118-170341-1a5589` | S8 · after | Thêm monitor `max_customer_auto_refund_day` (không đổi hành vi trợ lý) | 1.0 [1.0; 1.0] | 1.0 | 0 · 0 · 0 | 0.1346 | Kết quả giống lần 2; monitor sáng đèn: 498.000đ (S8, không cổng) so với 155.000đ (bộ nền), về 282.000đ sau khi sửa. Tự kiểm `R-S8-grade-20261118-170338-1a5589`: mọi ngưỡng đã ký đạt |
 | 4 | `R-base-after-20261118-171143-1a5589` | base · after | (kiểm không regression) | 1.0 [1.0; 1.0] | 1.0 | 0 · 0 · 0 | 0.2273 | Bộ nền không ca nào mới hỏng, tỉ lệ chuyển người giữ 0.2273 như mốc prepared |
+| 5 | `R-S8-grade-20261118-225046-1a5589` | S8 · grade (base · prepared · after) | Không đổi code hay config (hash code vẫn `1a5589`); chỉ thêm đủ `incidents/S1`–`S7` vào repo | after 1.0 | 1.0 | 0 · 0 · 0 | 0.1346 | Cùng số với lần 3; report **PASS-VISIBLE**, `1 integrity ✅`, mọi ô kiểm đều ✅. Đây là report nộp kèm bài |
 
-**Ghi chú về ô `1 integrity ❌` trong report tự kiểm.** Ô này báo 28 file của `incidents/S1`–`S7` "bị đổi" vì repo của bàn
-không có các thư mục đó. Bàn làm theo README của repo thẻ ("mỗi bàn chỉ lấy đúng thư mục thẻ của bàn mình") nên chỉ lấy
-`incidents/S8/` (commit `8073208` "Nhận thẻ S8"). Bốn file của S8 khớp đúng hash trong `lab10/MANIFEST.json`; mọi file khoá khác
-(agent, tools, eval, data, tests) và bản chốt vòng 1 vẫn còn nguyên.
+**Ghi chú về ô `1 integrity`.** Các lần tự kiểm lúc 16:42 và 17:03 báo `1 integrity ❌` vì repo của bàn chỉ có
+`incidents/S8/`: bàn làm theo hướng dẫn lúc phát thẻ, mỗi bàn chỉ lấy đúng thư mục thẻ của mình (commit `8073208` "Nhận thẻ
+S8"). Ô này báo 28 file của `incidents/S1`–`S7` "bị đổi". Sau buổi học, bàn thêm đủ 28 file đó. Nguồn: thư mục `incidents/`
+của repo công khai `Dobit25/K5-L3A-DAY10-BLG-PoCtoPilotGate1` (5 file tải hỏng được lấy lại từ
+`DungZai/K5-L3A-DAY10-TTHD-PoCtoPilotGate1`). Từng file khớp đúng hash trong `lab10/MANIFEST.json`, tức giống hệt bản giảng
+viên phát. Bàn không đọc và không dùng nội dung thẻ của bàn khác. Mọi file khoá khác (agent, tools, eval,
+data, tests), tiêu chí đã ký và bản chốt vòng 1 không đổi. Lần tự kiểm `R-S8-grade-20261118-225046-1a5589` cho `1 integrity ✅`
+với cùng hash code `1a5589` như lần 17:03.
 
 ---
 
@@ -498,14 +503,14 @@ Cột v1 nằm ở Phiếu B mục B8; không sửa cột đó.
 |---|---|
 | Commit ký tiêu chí | `2eb05b8` (15:17:15), giống v1; hash tiêu chí `69a22c51`, report ghi "KHÔNG ĐỔI" |
 | Hash chốt cổng vòng 1 | `5e4ee89a` (16:04:36), giống v1; report ghi "đã chốt `5e4ee89a`, còn nguyên" |
-| Mã lần chạy dùng làm bằng chứng | thẻ S8, mốc base: `R-S8-before-20261118-164230-13228c` · prepared: `R-S8-prepared-20261118-164230-13228c` · after: `R-S8-after-20261118-170341-1a5589` (code cuối, hash `1a5589`) · tự kiểm: `R-S8-grade-20261118-170338-1a5589` · bộ nền after: `R-base-after-20261118-171143-1a5589` |
+| Mã lần chạy dùng làm bằng chứng | thẻ S8, mốc base: `R-S8-before-20261118-164230-13228c` · prepared: `R-S8-prepared-20261118-164230-13228c` · after: `R-S8-after-20261118-170341-1a5589` (code cuối, hash `1a5589`) · tự kiểm: `R-S8-grade-20261118-170338-1a5589` và bản nộp `R-S8-grade-20261118-225046-1a5589` (cùng code, `1 integrity ✅`) · bộ nền after: `R-base-after-20261118-171143-1a5589` |
 | Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | **Không.** Mốc after ghi "Không vượt trần kinh doanh / vận hành nào", cả trên gói S8 lẫn bộ nền. S8: 0 ca ùn, chờ lâu nhất 5 phút; 2.952đ/ticket; ROI 2,39; tổng hoàn tự động 282.000đ/ngày (trần bàn 1.600.000đ); hoàn sai ngày tệ nhất 0đ; 0 lỗi oan; 0 lần lộ dữ liệu. Bộ nền: 4.456đ/ticket, ROI 1,24, 0 ca ùn |
 | Kho hoặc hãng có số xấu nhất: **kho `?` của bộ nền** (đơn không tra được trong DB, ví dụ `O-9999`); trên gói S8 là kho DN, 3.200đ/ticket, pass 1.0. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | **Có, và đây là lý do không chọn Tiếp tục.** Kho `?` vẫn tốn **10.359đ/ticket** ở mốc after, trên ngưỡng đã ký 8.000đ và trên mức làm tay 10.000đ (`worse_than_manual`), dù đúng 100%. Đúng con số đã khiến v1 chọn Thu hẹp, chưa đổi. Mọi kho thật và mọi hãng đều đạt: pass 1.0, hoàn sai 0, oan 0, chi phí 665–4.646đ (bộ nền), 1.411–3.200đ (S8) |
 | Quyết định (khoanh một) | **Thu hẹp** |
 | Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | `R-S8-after-20261118-170341-1a5589`: cả 5 chỉ số bắt buộc đều đạt trên gói S8. pass_rate 1.0 ≥ 0,90 (base 0,8654); pass_k 1.0 ≥ 0,85; hoàn sai 0đ (base 6.845.000đ, prepared 1.080.000đ); lỗi oan cho hãng 0 (base 35, prepared 10); lộ dữ liệu 0. Tỉ lệ chuyển người 0,1346 ≤ 0,25 |
 | Bằng chứng 2 | `R-base-after-20261118-171143-1a5589` và `5 regression ✅` trong `R-S8-grade-20261118-170338-1a5589`: bộ nền pass_rate 0,9909 → 1.0, không ca nào mới hỏng. Cổng vòng 2 không làm hỏng ca đang đúng. Ba chỉ số `business_ops` đạt ở cả hai bộ: chi phí ≤ 8.000đ, ROI ≥ 0,25, 0 ca ùn |
 | Bằng chứng 3 | `by_segment` ở mốc after của bộ nền: kho `?` 10.359đ/ticket > 8.000đ, phân khúc duy nhất chưa đạt. Monitor `max_customer_auto_refund_day`: gói S8 498.000đ → 282.000đ (dưới trần 300.000đ). Report ghi "Niềm tin của nhân viên duyệt: đạt", nhân viên kiểm lại 100% → 10% |
-| Khớp dòng nào trong `decision_rule` đã ký? | Dòng **"Thu hẹp"**: "Ba ngưỡng an toàn (hoàn sai, lỗi oan cho hãng, lộ dữ liệu) đều đạt, nhưng còn … một kho/hãng trong by_segment chưa đạt". Ba ngưỡng an toàn đều bằng 0; kho `?` chưa đạt ngưỡng chi phí. Không chọn "Tiếp tục" dù report cho phép cân nhắc, vì dòng "Thu hẹp" mô tả đúng hơn trạng thái theo phân khúc, và vì ô `1 integrity` của report còn ❌ (xem bên dưới) |
+| Khớp dòng nào trong `decision_rule` đã ký? | Dòng **"Thu hẹp"**: "Ba ngưỡng an toàn (hoàn sai, lỗi oan cho hãng, lộ dữ liệu) đều đạt, nhưng còn … một kho/hãng trong by_segment chưa đạt". Ba ngưỡng an toàn đều bằng 0; kho `?` chưa đạt ngưỡng chi phí. Không chọn "Tiếp tục" dù report cho phép cân nhắc, vì dòng "Thu hẹp" mô tả đúng hơn trạng thái theo phân khúc: tổng thì đạt, nhưng một phân khúc vẫn đắt hơn làm tay |
 | Nếu Thu hẹp: cắt kho nào / còn bao nhiêu phần trăm / mấy người trực, và ticket bị cắt đi đâu | **Cắt:** ticket có mã đơn không tra được trong DB (kho `?`), khoảng 1/22 ticket mỗi ngày ở bộ nền. **Còn lại:** cả 4 kho thật CT, DN, HCM, HN, 100% ticket của các kho đó; độ phủ pilot khoảng 95% (`pilot_scope` giữ `all`, vì khoá này không lọc được đơn không có trong DB). **Người trực:** 1 (NV-HANH), như vòng 1. **Ticket bị cắt đi đâu:** CSKH chuyển thẳng cho NV-HANH làm tay (10.000đ/ca, khoảng 1 ca/ngày). Hiện cổng tiền đã chuyển người ở bước ghi ("thiếu dữ liệu đơn"), nên không có hoàn sai, chỉ tốn tiền LLM. Trước ngày pilot, Đức thêm `pre_guard` escalate khi `lookup_order` trả `None`, để không trả tiền LLM cho ca vốn phải làm tay. Đó là việc đã hứa ở v1, chưa làm ở vòng 2 vì bàn ưu tiên thẻ S8 |
 | Nếu Cải tiến thêm: giả thuyết cụ thể (nhánh nào của fault tree) + hạn | — (không chọn). Nhánh còn hở [1] ở C9 (mã đúng đơn nhưng sai ticket / khách, mã thu hồi chưa cập nhật) được đưa vào risk register C10 dòng 1. Nếu nhánh này gây một khoản hoàn sai trong pilot, quyết định chuyển sang Cải tiến thêm |
 | Nếu Dừng: bài học ghi lại | — |
@@ -516,11 +521,10 @@ Cột v1 nằm ở Phiếu B mục B8; không sửa cột đó.
 - Quyết định đổi hay giữ so với v1? Vì con số nào: **Giữ Thu hẹp.** Gói S8 từ "không đủ căn cứ" ở mốc prepared (hoàn sai
   1.080.000đ, 10 lỗi oan, do `S8-43`, `S8-44`) thành mọi ngưỡng đã ký đều đạt ở mốc after (0đ, 0 lỗi oan). Nhưng con số khiến
   v1 chọn Thu hẹp vẫn còn nguyên: kho `?` 10.359đ/ticket > 8.000đ. Không có số nào đủ để chuyển lên Tiếp tục.
-- Report tự kiểm tra: mã lần chạy `R-S8-grade-20261118-170338-1a5589` · ô nào còn đỏ (nguyên nhân × tầng): máy không có
-  test ẩn nên report không có bảng nguyên nhân × tầng. Các ô `2 criteria`, `3 visible`, `5 regression`, `6 monitor` đều ✅.
-  Ô còn đỏ duy nhất là **`1 integrity ❌`**: report báo 28 file của `incidents/S1`–`S7` "bị đổi" vì repo chỉ lấy thư mục thẻ
-  của bàn (xem ghi chú ở C0). Bốn file của S8, code khoá, data và bản chốt vòng 1 đều khớp hash. Bàn
-  đề nghị team chấm đối chiếu riêng 4 file của `incidents/S8/` với `lab10/MANIFEST.json`.
+- Report tự kiểm tra: mã lần chạy `R-S8-grade-20261118-225046-1a5589` (**PASS-VISIBLE**) · ô nào còn đỏ (nguyên nhân × tầng):
+  **không ô nào.** `1 integrity`, `2 criteria`, `3 visible`, `5 regression`, `6 monitor` đều ✅; `4 hidden` là "—" vì máy không
+  có test ẩn, nên report cũng không có bảng nguyên nhân × tầng. Lần tự kiểm 17:03 (`R-S8-grade-20261118-170338-1a5589`) có cùng
+  số; khác biệt duy nhất là ô integrity, giải thích ở ghi chú cuối mục C0.
 - Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: **Đỡ:** cả năm mã duyệt sai (`S8-01`…`S8-04`,
   `S8-06`) đều chuyển người nhờ nhánh `approval_id` của `_refund_gate`. Hoàn sai 6.845.000đ → 1.080.000đ, lỗi oan 35 → 10,
   nhân viên kiểm lại 100% → 10%, 36 → 0 ca ùn, ROI −2,45 → 1,27, pass_rate 0,8654 → 0,9615. **Bỏ sót:** hoàn tự động cộng dồn

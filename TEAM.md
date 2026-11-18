@@ -118,7 +118,20 @@ Vòng 2: Phiếu C mục C5 (câu 3.2, specification), C10 (risk register), C11 
 
 - Phiếu B mục B7.5 (dòng "Người viết"), B7.6; Phiếu C mục C5, C10, C11, C12; `submission/submission.json`.
 - Số liệu dẫn từ `R-S8-after-20261118-170341-1a5589`, `R-S8-grade-20261118-170338-1a5589`, `R-base-after-20261118-171143-1a5589`.
+- Commit `8b9fa84` (C5, C10–C12, B7.6, `submission.json`, TEAM.md). Sau buổi học: thêm `incidents/S1`–`S7` (khớp hash
+  `MANIFEST.json`), chạy lại tự kiểm `R-S8-grade-20261118-225046-1a5589` (`1 integrity ✅`, PASS-VISIBLE), gom bài bằng lệnh 7.
+
+**Dùng AI:** dùng Claude (Claude Code) để soát phiếu so với đề và rubric, đọc report, soạn nháp các mục C5 câu 3.2, C10,
+C11, C12, B7.6, và tìm, kiểm hash 28 file thẻ S1–S7. Mọi con số trong các mục đó lấy từ report của bàn; quyết định v2
+(Thu hẹp, giữ v1) theo đúng `decision_rule` đã ký, và mình giải thích được lúc demo.
 
 ### Exit ticket
 
-*(Nghĩa tự viết: một điều học được, một điều còn chưa chắc.)*
+- **Một điều học được:** report "được phép cân nhắc Tiếp tục" chưa phải là lý do để Tiếp tục. Tổng của gói S8 đạt hết
+  ngưỡng đã ký, nhưng tách theo kho thì kho `?` vẫn tốn 10.359đ/ticket, đắt hơn làm tay. Quyết định phải đọc cả phân khúc
+  và khớp `decision_rule`, không chỉ đọc dòng tổng. Mình cũng học được rằng runbook tốt phải có tín hiệu báo **trước** sự
+  cố: Runbook 2 vòng 1 chỉ theo dõi tổng hoàn cả ngày (498.000đ, không báo gì), nên không thấy một khách đã vượt trần
+  300.000đ.
+- **Một điều còn chưa chắc:** tỉ lệ nhân viên kiểm lại 10% chỉ là giả định của bộ thử (`staff_behavior`). Mình chưa chắc
+  ngoài thực tế trưởng ca có thật sự thôi kiểm tay chỉ nhờ ghi chú giải thích, và chưa biết bảng `approvals` cập nhật chậm
+  bao lâu sau khi chị thu hồi mã. Cả hai phải đo trong tuần pilot đầu tiên.
