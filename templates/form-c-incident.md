@@ -82,33 +82,33 @@ python3 -m lab10.trace --suite Sx --ticket <ID> --seed 11
 Ba loại lỗi: **giới hạn của hệ thống** · **lỗi ngữ cảnh** · **lỗi chìm** (cả người dùng lẫn hệ thống đều không nhận ra; nguy hiểm nhất,
 người chịu hại thường là bên thứ ba). Định nghĩa đầy đủ và ví dụ: Phiếu B mục B2.
 
-**Tác hại của thẻ:** cho ai `____` · đo bằng gì `____` · bao nhiêu ở mốc base `____`
+**Tác hại của thẻ:** cho ai `trưởng ca NV-HANH (đứng tên những khoản chị không duyệt), LogiX (tiền hoàn sai), nhân viên CSKH (kiểm tay mọi quyết định, hàng chờ ùn)` · đo bằng gì `wrongful_refund_vnd, wrongful_carrier_faults, tỉ lệ nhân viên kiểm lại, số ca bị ùn, chờ lâu nhất, chi phí mỗi ticket` · bao nhiêu ở mốc base `R-S8-before-20261118-164230-13228c: hoàn sai 6.845.000đ, 35 lỗi oan cho hãng, nhân viên kiểm lại 100%, 36 ca ùn, chờ lâu nhất 216 phút, 11.225đ/ticket > làm tay 10.000đ, ROI -2.45`
 
 ### Phần 1 · Ghi lỗi (bằng chứng là mã ticket@seed và dòng trace, không tả chung chung)
 
 | # | Lỗi: người ta thấy gì (dán dòng trace / sổ cái) | Ai gặp, ai chịu | Hệ trọng (thấp / cao) | Loại lỗi (giới hạn hệ thống / ngữ cảnh / chìm) |
 |---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
+| 1 | `S8-03@11` (mốc base): `05 approval_used {"approval_id": "A-2803"}` → `SỔ CÁI: amount_vnd 235000, approval_id A-2803`. Trong `world_patch.json`, `A-2803` chỉ có `max_vnd: 150000`. Nhãn đúng: `escalated`, hoàn 0đ | Khách vui vì được hoàn đủ; không ai trong luồng thấy sai. Người chịu: NV-HANH bị ghi tên duyệt 235.000đ dù chỉ duyệt 150.000đ, phải giải trình với kiểm toán; LogiX chi vượt mức được duyệt | cao | **chìm** (khách và trợ lý đều thấy "đã xong", chỉ lộ ra khi kiểm toán nội bộ đối chiếu; người chịu là bên thứ ba so với cuộc hội thoại) |
+| 2 | `S8-06@11` (mốc base): `05 approval_used {"approval_id": "A-2806"}` → `SỔ CÁI: amount_vnd 230000, approval_id A-2806`. `A-2806` có `status: "revoked"` (trưởng ca đã thu hồi). Cùng kiểu: `S8-02` dùng `A-2802` hết hạn `2026-11-10`; `S8-01` dùng `A-2801` `status: "used"`, cấp cho `T-OLD-2801` | NV-HANH: đã thu hồi mã mà trợ lý vẫn dùng, nên chị mất lòng tin và bắt cả ca kiểm tay; nhân viên CSKH gánh hàng chờ | cao | **giới hạn hệ thống** (trợ lý chỉ biết "đơn có mã duyệt", không đọc được trạng thái, hạn, ticket của mã; làm đúng như thiết kế nhưng thiết kế không đủ) |
+| 3 | `S8-43@11` (mốc prepared, cổng vòng 1 vẫn lọt): `04 proposal {"amount_vnd": 104000, "delay_days_used": 9}` → `SỔ CÁI: customer_id C-16, amount_vnd 104000, approval_id None`. Từng khoản đúng chính sách (trễ 9 ngày, lỗi hãng), nhưng `C-16` đã được hoàn tự động trong loạt `S8-40`…`S8-42` cùng ngày, cộng dồn vượt trần 300.000đ/khách/ngày (`ops_limits.max_auto_refund_per_customer_per_day_vnd`). Nhãn đúng: `escalated` | LogiX chi vượt trần đã thống nhất với Tài chính; hãng GHSH, LGX bị ghi lỗi tự động (10 lỗi oan ở mốc prepared) | cao | **ngữ cảnh** (mỗi quyết định riêng lẻ đúng, sai khi đặt trong ngữ cảnh cả ngày của cùng một khách) |
 
 ### Phần 2 · Tìm nguồn (đánh dấu câu nào đúng với từng lỗi)
 
 | Câu hỏi | Lỗi 1 | Lỗi 2 | Lỗi 3 |
 |---|---|---|---|
 | **Đầu vào:** hệ thống có tự diễn giải / sửa đầu vào của người dùng theo cách họ không lường? Có đặt sai trọng số cho một lời nói hay tín hiệu của người dùng? | | | |
-| **Độ liên quan:** hệ thống có thiếu dữ liệu cần để quyết đúng? Dữ liệu vào có nhiễu, thiếu ổn định? | | | |
-| **Thứ bậc hệ thống:** có hai hệ thống cùng ghi / cùng theo dõi một thứ mà không rõ bên nào là chủ (ví dụ CSKH hoàn tay và trợ lý cùng ghi sổ)? | | | |
-| **Trạng thái hỏng:** nhiều lỗi cộng lại có làm tính năng không dùng được (ví dụ LLM lỗi liên tiếp)? | | | |
+| **Độ liên quan:** hệ thống có thiếu dữ liệu cần để quyết đúng? Dữ liệu vào có nhiễu, thiếu ổn định? | ✓ Có dữ liệu nhưng không dùng: trợ lý không so `amount_vnd` với `max_vnd` của phê duyệt | | ✓ Thiếu dữ liệu: khi quyết một ticket, trợ lý không thấy tổng đã hoàn cho cùng khách trong ngày |
+| **Thứ bậc hệ thống:** có hai hệ thống cùng ghi / cùng theo dõi một thứ mà không rõ bên nào là chủ (ví dụ CSKH hoàn tay và trợ lý cùng ghi sổ)? | | ✓ Trạng thái phê duyệt do trưởng ca giữ (cấp, thu hồi, hạn), nhưng trợ lý tự coi "có bản ghi phê duyệt" là được phép; không rõ bên nào quyết mã còn giá trị | |
+| **Trạng thái hỏng:** nhiều lỗi cộng lại có làm tính năng không dùng được (ví dụ LLM lỗi liên tiếp)? | | ✓ Hệ quả: vài mã sai làm trưởng ca bắt kiểm tay 100%, hàng chờ 36 ca ùn, chi phí 11.225đ/ticket > làm tay, nên tính năng tự động mất tác dụng | |
 
 ### Phần 3 · Hướng xử lý (mỗi lỗi một ô)
 
 | | Lỗi 1 | Lỗi 2 | Lỗi 3 |
 |---|---|---|---|
-| Vì sao người gặp coi đây là lỗi | | | |
-| Kiểu giải pháp: phản hồi cho người dùng / trao quyền kiểm soát cho người / khác | | | |
-| Đường đi của người sau khi có giải pháp (ví dụ: ticket chuyển sang người duyệt → duyệt → khách được trả lời) | | | |
-| Hệ thống học được gì (tín hiệu ghi lại để theo dõi: tên metric trong `monitors.py`) | | | |
+| Vì sao người gặp coi đây là lỗi | Người đứng tên duyệt phải giải trình một khoản lớn hơn mức chị đã ký | Mã đã thu hồi / hết hạn / đã dùng vẫn được dùng, tức là quyết định của trưởng ca không có hiệu lực với trợ lý | Tài chính đã đặt trần 300.000đ/khách/ngày; vượt trần mà không ai duyệt |
+| Kiểu giải pháp: phản hồi cho người dùng / trao quyền kiểm soát cho người / khác | Trao quyền kiểm soát cho người: khoản vượt `max_vnd` thì chuyển người duyệt (cổng tiền vòng 1) | Trao quyền kiểm soát cho người + phản hồi: chỉ dùng mã `status = valid`, còn hạn, đúng đơn; mỗi quyết định kèm ghi chú giải thích (`operations.decision_note`) để người duyệt thấy vì sao | Trao quyền kiểm soát cho người: cộng dồn vượt trần thì chuyển người (cổng tiền vòng 2) |
+| Đường đi của người sau khi có giải pháp (ví dụ: ticket chuyển sang người duyệt → duyệt → khách được trả lời) | Ticket → cổng tiền thấy 235.000đ > `max_vnd` 150.000đ → chuyển NV-HANH → chị duyệt lại mức mới hoặc từ chối → khách được trả lời | Ticket → cổng tiền thấy mã `revoked` → chuyển NV-HANH → chị xem ghi chú, quyết → khách được trả lời; nhân viên chỉ kiểm mẫu 10% thay vì 100% | Ticket thứ tư của `C-16` trong ngày → cổng tiền thấy tổng vượt 300.000đ → chuyển NV-HANH → duyệt → hoàn, ghi lỗi hãng nếu đúng |
+| Hệ thống học được gì (tín hiệu ghi lại để theo dõi: tên metric trong `monitors.py`) | `escalation_rate`; dòng `wrongful_refund_vnd` và "Niềm tin của nhân viên duyệt" trong report grade | `escalation_rate`; dòng "nhân viên kiểm lại quyết định tự động (%)" và "số ca bị ùn" trong report | `max_customer_auto_refund_day` (498.000đ ở mốc base của S8 → 282.000đ sau khi sửa; trần 300.000đ) |
 
 Yêu cầu: ít nhất **hai lỗi có nguồn khác nhau** ở phần 2, và ít nhất một lỗi được xếp đúng là **lỗi chìm**.
 
