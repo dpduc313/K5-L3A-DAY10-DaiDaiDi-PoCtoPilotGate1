@@ -46,3 +46,20 @@ Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
 ### Exit ticket
 
 Một điều học được, một điều còn chưa chắc.
+## BuiXuanThanh-2A202603521
+
+### Phần việc phụ trách
+
+Vai Vận hành và pháp lý. Phiếu B mục B4 (HAZOP vòng 1), B5 (checklist 9 nhóm); Phiếu C mục C3, C4, C5 (câu 3.3), C9, C10, C11.
+
+### Đóng góp cụ thể
+
+- B5: điền checklist 9 nhóm, PIC có tên cho từng dòng (issue #3).
+
+### Bằng chứng
+
+- Commit 5c771b6, 82ff732 (B5).
+
+### Exit ticket
+
+(viết cuối buổi)
