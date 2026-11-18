@@ -174,15 +174,15 @@ mà cả bàn chưa nghĩ tới, không phải tả lại nhánh đã biết.
 **Câu hỏi dẫn dắt:** tool nào tạo ra hậu quả không đảo ngược? Mỗi tham số của tool đó lấy từ đâu (ticket, DB, model tự suy)?
 Với mỗi guideword: hậu quả cho ai, hiện có gì ngăn, cần thêm gate ở tầng nào (phát hiện / chặn / giới hạn thiệt hại)?
 
-Tool chọn phân tích: `________________` (gợi ý: `issue_refund`, `file_carrier_fault`, `notify_carrier`)
+Tool chọn phân tích: `issue_refund` (gợi ý: `issue_refund`, `file_carrier_fault`, `notify_carrier`)
 
 | Tham số / dòng dữ liệu | Guideword | Lệch cụ thể (viết bằng dữ kiện của lab) | Hậu quả, cho ai | Hiện có gì ngăn? | Gate đề xuất + tầng |
 |---|---|---|---|---|---|
-| | WRONG | | | | |
-| | INVALID | | | | |
-| | INCOMPLETE | | | | |
-| | PERTURBED | | | | |
-| | INCAPABLE | | | | |
+| `amount_vnd` (tính từ `delay_days_used`) | WRONG | `T-002@55`: khách viết "trễ 5 ngày", tracking DB của O-1002 chỉ trễ 2 ngày; trace có `model_override` (db 2 → ticket 5), REFUND-v3 cần ≥ 3 ngày mới hoàn phí, vậy mà vẫn ghi 20.000đ | LogiX mất 20.000đ; chị Oanh lệch sổ khi đối soát; VNX bị kéo theo một lỗi oan | Mốc base: không có gì ngoài trần tổng tiền đơn | `write_gate` khi `issue_refund`: so `amount_vnd` với `entitlement_vnd` tính từ `db_delay_days`, sửa về quyền lợi hoặc từ chối · tầng **chặn** (B7.1 cổng 2) |
+| `approval_id` | INVALID | **Nhánh chưa thấy trên trace:** 110 lần chạy bộ nền chỉ có `approval_used` = A-0008 (hợp lệ, đúng T-008). Nhưng bảng `approvals` còn A-0031 của khách C-02: `status: used`, hết hạn 2026-10-01, cấp cho đơn O-0911. Nếu trợ lý lấy lại mã này cho một đơn khác của C-02 thì khoản hoàn mang tên NV-HANH duyệt dù chị không duyệt | NV-HANH phải giải trình khoản mình không duyệt; LogiX chi vượt `auto_limit_vnd` 200.000đ của REFUND-v3 mà không ai thật sự duyệt | Mốc base: không kiểm mã duyệt | `write_gate`: chỉ nhận phê duyệt khi `status = valid`, `expires_at ≥ hôm nay`, đúng `order_id`, `max_vnd ≥ amount_vnd`; sai một điều → chuyển người · tầng **chặn** (B7.1 cổng 2) |
+| `policy_id` | INVALID (sai phiên bản) | Trợ lý chọn chính sách theo cờ `index_active` do người bật tay, không theo ngày: REFUND-v3 hết hiệu lực 30/11, REFUND-v4 hiệu lực từ 01/12 (phí từ 2 ngày, `auto_limit_vnd` 100.000đ). Quên đổi cờ thì từ 01/12 vẫn tính theo v3; trace bộ nền ghi `pinned: false` | Khách bị hoàn sai mức; khoản 100.000–200.000đ đáng ra phải có người duyệt theo v4 lại chạy tự động | Mốc base: không ghim chính sách | `pre_guard`: ghim `effective_policy` theo `ctx.as_of` · tầng **chặn** (B7.1 cổng 1) |
+| `payer` | PERTURBED | Chữ khách cài câu lệnh kiểu "phí này shop chịu" làm `payer` lệch khỏi LOGIX. Bộ nền chưa có ticket nào như vậy (110/110 lần `directive: null`), nên cũng là nhánh chưa thấy trên trace | Shop bị trừ tiền mà không được hỏi (`merchant_debit_vnd`) | Mốc base: không | `write_gate`: `payer` khác LOGIX → chuyển người · tầng **chặn** (B7.1 cổng 2) |
+| Ghi sổ cái | INCAPABLE | Sổ cái trả lỗi 429, trợ lý "không chắc đã ghi" nên gọi `issue_refund` lần hai cho cùng đơn | Một đơn được hoàn hai lần; sổ của chị Oanh lệch so với hãng và shop | Mốc base: không | `write_gate`: đã có dòng sổ cái của chính ticket → bỏ lệnh thứ hai; đơn đã hoàn ở ticket khác → chuyển người · tầng **chặn** (B7.1 cổng 2) |
 
 Không bắt buộc điền đủ năm dòng. Bắt buộc: **ít nhất ba dòng, trong đó một dòng là nhánh bàn chưa thấy trên trace**.
 
@@ -197,8 +197,10 @@ Không bắt buộc điền đủ năm dòng. Bắt buộc: **ít nhất ba dòn
 
 | Thành phần | Guideword | Lệch cụ thể | Hậu quả, cho ai | Cổng đề xuất: code hay con số nào trong `config/operating_gates.json` |
 |---|---|---|---|---|
-| | | | | |
-| | | | | |
+| Người duyệt (NV-HANH, vận hành) | INCAPABLE | 1 người trực, duyệt 6 ca/giờ (`ops_facts`). Bộ nền chuyển 22,7% ticket (5 ca/ngày) nên chưa ùn. Nhưng nếu nhân viên mất lòng tin và kiểm tay mọi quyết định tự động (`staff_behavior.recheck_auto_decisions_pct` từ 0 lên 100), hoặc ticket tăng gấp ba, thì vượt 6 ca/giờ và ca chờ quá hạn 60 phút | Khách chờ lâu; chi phí mỗi ticket vượt mức làm tay 10.000đ; ROI âm | `operations.max_queue_wait_minutes = 60`; `operations.decision_note = true` và `operations.review_sampling_pct = 10` (đúng điều kiện trong `staff_behavior.trust_conditions` để nhân viên chuyển sang kiểm mẫu); `operations.approver_id = NV-HANH` |
+| Ngân sách (Finance, kinh doanh) | WRONG | Tổng hoàn tự động trong ngày vượt ngân sách Finance 2.000.000đ (`ops_limits.daily_auto_refund_budget_vnd`) mà không ai được báo | LogiX chi vượt mức đã thống nhất với Finance | `business.daily_refund_cap_vnd = 1600000` (thấp hơn ngân sách để còn chỗ cho ca người duyệt); report đo dòng "tổng hoàn tự động một ngày" |
+| Dữ liệu gửi bên thứ ba (hãng, pháp lý) | PERTURBED | `T-002@55`: `notify_carrier` gửi nguyên `customer_note` (chữ khách tự gõ) cho VNX. Khách có thể ghi tên, số điện thoại người khác vào đó | Lộ dữ liệu cá nhân cho bên thứ ba; LogiX chịu trách nhiệm pháp lý | `legal.pii_fields_blocked_to_third_party = ["recipient_contact", "customer_note"]` |
+| Hãng vận chuyển (bên thứ ba, pháp lý) | WRONG | `T-002@55`: ghi lỗi cho VNX 5 ngày trễ trong khi DB chỉ 2 ngày. Hãng nhỏ như GHSH (12 tài xế) bị phạt 150.000đ mỗi lỗi và tạm ngưng sau 3 lỗi trong 7 ngày | Hãng bị phạt hoặc tạm ngưng oan; tài xế mất thu nhập | `legal.carrier_fault_requires_recorded_cause = true` + `write_gate` khi `file_carrier_fault` (B7.1 cổng 3); trần 2 lỗi tự động mỗi hãng mỗi ngày (`ops_limits`) |
 
 **Ví dụ mẫu (`issue_refund`, đừng chép):** tham số `amount_vnd` · WRONG · số tiền tính từ số ngày khách tự khai · LogiX mất
 tiền, hãng bị kéo theo một lỗi · hiện chỉ có trần "không vượt tổng tiền đơn" · cổng ghi so với quyền lợi tính từ DB (chặn).
