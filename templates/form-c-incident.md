@@ -249,9 +249,9 @@ Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chư
 
 ### Câu 3.2 · Một specification mà nếu bị vi phạm thì gây ra tác hại trên thẻ
 
-Kiểm được bằng code hoặc bằng một con số trong report: …
+Kiểm được bằng code hoặc bằng một con số trong report: **Mọi lệnh `issue_refund` vượt hạn mức tự động chỉ được ghi khi có một phê duyệt còn giá trị cho đúng khoản đó; không có thì chuyển NV-HANH, không ghi.** "Vượt hạn mức tự động" là: một khoản > `auto_limit_vnd` của chính sách đang hiệu lực theo ngày (REFUND-v3: 200.000đ), **hoặc** tổng đã hoàn tự động cho cùng `customer_id` trong ngày cộng khoản này > 300.000đ (`ops_limits.max_auto_refund_per_customer_per_day_vnd`). "Phê duyệt còn giá trị" là bản ghi trong `approvals` có `ticket_id`, `order_id`, `customer_id` trùng ticket đang xử lý, `status` = `valid`, `expires_at` ≥ ngày hôm nay, và `max_vnd` ≥ số tiền chi. Vi phạm spec chính là tác hại trên thẻ S8: chị Hạnh bị đứng tên cho khoản chị không duyệt (mã của ticket khác, hết hạn 10/11, đã thu hồi, duyệt 150.000đ mà chi 235.000đ), nên cả ca kiểm tay 100% → mốc base gói S8: 36 ca ùn, chờ lâu nhất 216 phút, 11.225đ/ticket > làm tay 10.000đ, ROI −2,45.
 
-Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): …
+Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): Code: `write_gate` với `action["tool"] == "issue_refund"`, đối chiếu `ctx.tools.lookup_approvals(...)`, `effective_policy`, và tổng hoàn trong ngày của khách từ `ctx.tools.ledger_rows(customer_id=...)`. Report `python -m lab10.grade --incident S8`, gói nhìn thấy: (1) dòng "Niềm tin của nhân viên duyệt" = **đạt** (lệnh tự kiểm báo "chưa đạt" ngay khi có một khoản hoàn mang phê duyệt sai ticket, hết hạn, không `valid` hoặc `max_vnd` < số tiền); (2) `wrongful_refund_vnd` = 0; (3) "nhân viên kiểm lại quyết định tự động (%)" giữ 10, không bật lại 100. Mốc prepared `R-S8-prepared-20261118-170902-13228c`: (1) đạt, (3) = 10, nhưng (2) = 1.080.000đ vì vế cộng dồn chưa có cổng: khách C-16 có 5 đơn trong ngày, `S8-43@11` đẩy tổng lên 86k + 94k + 102k + 104k = 386k > 300k mà trợ lý vẫn tự hoàn và ghi lỗi GHSH.
 
 ### Câu 3.3 · Một giả định về môi trường mà người thiết kế đã ngầm tin, nhưng nhiều khả năng sai ngoài thực tế
 
