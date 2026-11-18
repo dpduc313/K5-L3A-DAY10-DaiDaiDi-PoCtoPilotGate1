@@ -381,13 +381,16 @@ Mỗi dòng một tín hiệu. Cột "Lấy ở đâu" phải là một dòng tr
 
 Lượng ticket có thể dồn gấp ba trong một giờ (ngày sale, sau bão). Viết trước, khi chưa biết sự cố.
 
+*Bổ sung ở vòng 2 (sau khi nhận thẻ S8). Mục này không bắt buộc với S8 và bàn chưa viết ở vòng 1. Các con số lấy từ
+`ops_facts` và report; không sửa gì ở cột v1 của mục B8.*
+
 | Câu hỏi | Trả lời (có số, có tên) |
 |---|---|
-| Giờ cao điểm là khi nào, bao nhiêu ticket mỗi giờ (dựa vào `ops_facts`)? | |
-| Ai trực giờ cao điểm, mấy người (khớp `operations.reviewers_on_shift`)? | |
-| Ngưỡng nào thì **gọi thêm người** (hàng chờ bao nhiêu ca, chờ lâu nhất bao nhiêu phút)? Ai gọi? | |
-| Ngưỡng nào thì **thu hẹp** phạm vi (khoá `business.pilot_scope`) hoặc **tắt** một thao tác ghi (`config/switches.json`)? Ai quyết? | |
-| Thêm người thì chi phí mỗi ticket và ROI thay đổi thế nào (đọc report)? | |
+| Giờ cao điểm là khi nào, bao nhiêu ticket mỗi giờ (dựa vào `ops_facts`)? | Ngày sale hoặc sau bão, khi ticket dồn gấp ba trong một giờ. Một ca dài 480 phút (`ops_facts.shift_minutes`). Bộ nền 22 ticket/ngày, tức khoảng 2,75 ticket/giờ; cao điểm khoảng **8 ticket/giờ**. Ngày cỡ gói S8 có 52 ticket, tức khoảng 6,5/giờ; cao điểm khoảng **20 ticket/giờ**. Với tỉ lệ vào hàng chờ ở mốc after (0,2115 trên S8, gồm ca chuyển người và ca kiểm mẫu), cao điểm có khoảng 4 ca/giờ vào hàng chờ, dưới công suất 6 ca/giờ/người (`review_capacity_per_reviewer_per_hour`). Nếu nhân viên quay lại kiểm tay 100% (mốc base của S8), cả 20 ca/giờ vào hàng chờ, gấp hơn ba lần công suất |
+| Ai trực giờ cao điểm, mấy người (khớp `operations.reviewers_on_shift`)? | **1 người:** Trần Thị Hạnh (`NV-HANH`, `operations.approver_id`), khớp `reviewers_on_shift = 1`. Người dự phòng do NV-TUNG gọi khi chạm ngưỡng ở dòng dưới |
+| Ngưỡng nào thì **gọi thêm người** (hàng chờ bao nhiêu ca, chờ lâu nhất bao nhiêu phút)? Ai gọi? | **NV-TUNG gọi.** Báo trước khi chờ lâu nhất (`ops.queue.wait_max_min`) > 30 phút. Gọi thêm 1 người khi chờ lâu nhất > 60 phút (`operations.max_queue_wait_minutes` = `ops_limits.review_sla_minutes`), hoặc có ≥ 1 ca ùn (`queue_stuck_max` = 0 đã ký), hoặc "nhân viên kiểm lại quyết định tự động (%)" vượt 10 |
+| Ngưỡng nào thì **thu hẹp** phạm vi (khoá `business.pilot_scope`) hoặc **tắt** một thao tác ghi (`config/switches.json`)? Ai quyết? | **NV-TUNG quyết.** Thu hẹp: đã gọi người mà 30 phút sau vẫn có ca ùn, thì đổi `pilot_scope` thành `{"mode": "warehouse", "warehouses": ["CT", "HN"], "percent": 100}` (hai kho rẻ nhất). Một kho có chi phí > 10.000đ/ticket thì cắt kho đó. Tắt thao tác ghi: theo `operations.stop_conditions` (1 lỗi oan cho hãng hoặc 1 lần lộ dữ liệu → tắt `file_carrier_fault`, `notify_carrier` trong 15 phút); LLM lỗi (`degraded_run_rate` > 0,10 trong một giờ) → tắt `issue_refund`, `file_carrier_fault` |
+| Thêm người thì chi phí mỗi ticket và ROI thay đổi thế nào (đọc report)? | Mỗi người trực thêm tốn 30.000đ/ca (`reviewer_standby_fee_vnd`). Chạy thử `reviewers_on_shift = 2` trên bản sao (chưa phải số chính thức của bàn): bộ nền 4.456đ → **5.820đ/ticket**, ROI 1,24 → **0,72**; gói S8 2.952đ → **3.529đ/ticket**, ROI 2,39 → **1,83**. Cả hai vẫn đạt `cost_per_ticket_vnd_max` 8.000đ và `roi_min` 0,25 đã ký, nên thêm một người giờ cao điểm là chấp nhận được. Với 22 ticket/ngày, thêm người thứ ba sẽ đẩy chi phí lên khoảng 7.200đ, sát ngưỡng |
 
 ---
 

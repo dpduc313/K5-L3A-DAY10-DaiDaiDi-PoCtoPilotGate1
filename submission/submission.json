@@ -1,12 +1,17 @@
 {
-  "team": "",
-  "members": [],
-  "incident": "",
-  "decision_v1": "",
-  "decision_v2": "",
+  "team": "K5-L3A-DAY10-DaiDaiDi-PoCtoPilotGate1",
+  "members": [
+    "DauPhucDuc-2A202603580",
+    "VoCongMinh-2A202603520",
+    "BuiXuanThanh-2A202603521",
+    "NguyenDacTuanNghia-2A202603442"
+  ],
+  "incident": "S8",
+  "decision_v1": "Thu hẹp",
+  "decision_v2": "Thu hẹp",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "Bảng `approvals` và sổ cái luôn phản ánh đúng, ngay lúc trợ lý đọc, mọi việc trưởng ca NV-HANH đã duyệt, thu hồi hay giới hạn, và CSKH không hoàn tay khoản nào ngoài sổ. Ngoài thực tế mã thường bị thu hồi qua điện thoại hay Zalo rồi mới cập nhật sau, nên cổng có thể cho qua một mã vừa bị thu hồi hoặc không thấy khoản đã hoàn tay cho cùng khách.",
+    "reduce_or_prevent": "Cổng NGĂN được tác hại trên dữ liệu nó nhìn thấy: `_refund_gate` đọc bảng `approvals` và sổ cái ngay trước mỗi lệnh ghi, chuyển người mọi mã sai một trong bốn điều kiện và mọi khoản làm tổng tự động của một khách vượt 300.000đ/ngày (gói S8 từ 6.845.000đ hoàn sai và 35 lỗi oan xuống 0). Nhưng xét tổng thể nó chỉ GIẢM khả năng: mã thu hồi chưa cập nhật, mã cấp cho ticket khác của cùng đơn, khoản hoàn ngoài sổ thì cổng không thấy. Lòng tin của nhân viên (kiểm lại 100% → 10%) là hành vi của người, config chỉ đáp ứng điều kiện để họ chuyển sang kiểm mẫu.",
+    "measure_in_pilot": "Đo tỉ lệ nhân viên thực sự kiểm lại quyết định tự động khi có ghi chú giải thích (bộ thử giả định 10%) và độ trễ từ lúc NV-HANH thu hồi một mã tới lúc bảng `approvals` đổi trạng thái; số ticket mỗi giờ lúc cao điểm so với công suất 6 ca/giờ/người; giá trị thật của `max_customer_auto_refund_day`; và tỉ lệ ticket có mã đơn không tra được (bộ thử 1/22) để biết phần bị cắt khỏi pilot lớn tới đâu."
   }
 }
