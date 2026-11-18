@@ -5,7 +5,7 @@
 - Tên nhóm (`TenNhom`, không dấu, không khoảng trắng): `DaiDaiDi`
 - Lớp: `L3A`
 - Repo của bàn: `K5-L3A-DAY10-DaiDaiDi-PoCtoPilotGate1`
-- Thẻ sự cố đã bốc (S1–S8): (chưa bốc)
+- Thẻ sự cố đã bốc (S1–S8): `S8`
 
 ## Thành viên
 

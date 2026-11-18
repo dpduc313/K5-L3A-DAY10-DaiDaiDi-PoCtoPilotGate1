@@ -52,6 +52,14 @@ def _facts(ctx, order_id):
     return order, policy, parcel, H.db_delay_days(parcel, ctx.as_of)
 
 
+def _auto_refund_today_for(ctx, customer_id):
+    """Tổng đã hoàn TỰ ĐỘNG (không có phê duyệt) cho một khách trong ngày giả lập hiện tại.
+    Bỏ các dòng sổ cái có từ trước hôm nay, giống cách ctx.tools.auto_refund_today_vnd() tính cho cả ngày."""
+    start = getattr(getattr(ctx.tools, "_w", None), "seed_rows", 0)
+    return sum(r["amount_vnd"] for r in ctx.tools.ledger_rows()[start:]
+               if r.get("customer_id") == customer_id and not r.get("approval_id"))
+
+
 def pre_guard(ctx):
     policy = H.effective_policy(ctx.tools.lookup_policies(), ctx.as_of)
     if policy is None:
@@ -88,11 +96,26 @@ def _refund_gate(ctx, action):
         return Verdict.allow()   # khoản có phê duyệt hợp lệ: người duyệt đã chịu trách nhiệm số tiền
 
     entitled = H.entitlement_vnd(policy, order, delay, parcel.get("delay_cause"))
+    if amount > entitled and entitled <= 0:
+        ctx.log("refund_over_entitlement", asked=amount, entitled=entitled, db_delay_days=delay,
+                policy_id=policy["policy_id"])
+        return Verdict.deny(f"theo tracking trễ {delay} ngày và {policy['policy_id']}: không đủ điều kiện hoàn")
+    final = min(amount, entitled)
+
+    # VÒNG 2 (thẻ S8): trần hoàn tự động cho MỘT khách trong MỘT ngày (ops_limits, đã thống nhất với Ops/Finance).
+    # Từng khoản đúng chính sách vẫn có thể cộng dồn vượt trần; vượt thì phải có người duyệt.
+    cap = ctx.tools.ops_limits().get("max_auto_refund_per_customer_per_day_vnd")
+    customer_id = action.get("customer_id") or order.get("customer_id")
+    if cap is not None and customer_id:
+        today = _auto_refund_today_for(ctx, customer_id)
+        if today + final > cap:
+            ctx.log("customer_daily_cap", customer_id=customer_id, today_vnd=today, asked=final, cap=cap)
+            return Verdict.escalate(f"khách {customer_id} đã được hoàn tự động {today}đ hôm nay; "
+                                    f"thêm {final}đ sẽ vượt trần {cap}đ/khách/ngày, cần người duyệt")
+
     if amount > entitled:
         ctx.log("refund_over_entitlement", asked=amount, entitled=entitled, db_delay_days=delay,
                 policy_id=policy["policy_id"])
-        if entitled <= 0:
-            return Verdict.deny(f"theo tracking trễ {delay} ngày và {policy['policy_id']}: không đủ điều kiện hoàn")
         return Verdict.modify(f"sửa về quyền lợi theo DB ({delay} ngày, {policy['policy_id']})", amount_vnd=entitled)
     return Verdict.allow()
 
