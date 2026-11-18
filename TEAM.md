@@ -2,10 +2,10 @@
 
 ## Thông tin nhóm
 
-- Tên nhóm (`TenNhom`, không dấu, không khoảng trắng):
-- Lớp: `L3A` / `L3B`
-- Repo của bàn: `K5-<L3A|L3B>-DAY10-<TenNhom>-PoCtoPilotGate1`
-- Thẻ sự cố đã bốc (S1–S8):
+- Tên nhóm (`TenNhom`, không dấu, không khoảng trắng): `DaiDaiDi`
+- Lớp: `L3A`
+- Repo của bàn: `K5-L3A-DAY10-DaiDaiDi-PoCtoPilotGate1`
+- Thẻ sự cố đã bốc (S1–S8): (chưa bốc)
 
 ## Thành viên
 
@@ -13,10 +13,15 @@ Họ tên đầy đủ và MSSV của **mọi** thành viên; thêm dòng nếu 
 
 | STT | Họ và tên | MSSV | Vai | Trưởng nhóm |
 | --: | --------- | ---- | --- | :---------: |
-|   1 |           |      |     |             |
-|   2 |           |      |     |             |
-|   3 |           |      |     |             |
-|   4 |           |      |     |             |
+|   1 | Đậu Phúc Đức | 2A202603580 | Kỹ sư cổng | ✓ |
+|   2 | Minh (chờ họ tên đầy đủ) | (chờ) | Sản phẩm và kinh doanh | |
+|   3 | Thành (chờ họ tên đầy đủ) | (chờ) | Vận hành và pháp lý | |
+|   4 | Nghĩa (chờ họ tên đầy đủ) | (chờ) | Vận hành và pháp lý | |
+
+**Ghi chú về đổi vai.** Lúc ký tiêu chí (commit `2eb05b8`, 15:17:15) bàn đang phân Thành vai Sản phẩm và kinh doanh, Minh vai
+Vận hành và pháp lý. Khoảng 15:50 hai bạn đổi vai cho nhau (Minh báo ở issue #6), bảng trên là vai hiện tại. Hai chỗ sau vẫn
+ghi theo phân vai cũ và **không sửa**, vì luật lab cấm sửa sau khi chốt: `signed_by` trong `config/acceptance_criteria.json`
+("Thành, vai Sản phẩm và kinh doanh") và ô "PIC ký" ở cột v1 của Phiếu B mục B8. Thành đã ký thay mặt bàn theo phân vai lúc đó.
 
 Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, khớp bảng trên.
 
