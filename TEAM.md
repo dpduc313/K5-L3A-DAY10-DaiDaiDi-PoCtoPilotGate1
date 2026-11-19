@@ -51,6 +51,25 @@ Phiếu A mục A1–A5; Phiếu B mục B0–B2, B7.1, B8 (v1); Phiếu C mục
 - Mã lần chạy: `R-base-before-20261118-152543-b45eeb`, `R-base-prepared-20261118-160514-13228c`,
   `R-S8-grade-20261118-164228-13228c`, `R-S8-after-20261118-170341-1a5589`, `R-S8-grade-20261118-170338-1a5589`.
 
+### Đã dùng AI vào việc gì
+
+Mình dùng Claude Code (trợ lý lập trình của Anthropic) trong VS Code cho hầu hết phần việc của vai Kỹ sư cổng:
+
+- **Đọc đề và lập kế hoạch:** tóm tắt các file đề, rubric, checkpoint; lập danh sách việc và câu hỏi cần chốt; soạn nội dung
+  các issue giao việc cho bàn.
+- **Tiêu chí và config:** đề xuất các ngưỡng trong Bản tiêu chí và các con số trong `config/operating_gates.json`, mỗi số kèm
+  lý do lấy từ `data/world.json` (`ops_limits`, `ops_facts`). Mình đọc lý do, đồng ý, rồi Thành ký thay mặt bàn.
+- **Code:** viết cổng vòng 1 và vòng 2 trong `lab10/guards.py` và các monitor trong `lab10/monitors.py`; chạy thử không ghi
+  nhật ký để kiểm không làm hỏng ca đang đúng trước mỗi lần đo chính thức. Cổng chỉ đọc nguồn sự thật (đơn, tracking,
+  chính sách theo ngày, phê duyệt, sổ cái, `ops_limits`), không có nhánh nào theo mã ticket hay câu chữ khách viết.
+- **Đo và dò lỗi:** chạy `lab10.eval`, `lab10.grade`, `lab10.trace`; dò `T-002@55`, các ticket `S8-01`…`S8-06`, `S8-43`;
+  kiểm hash bốn file thẻ S8 với `lab10/MANIFEST.json` trước khi đưa thẻ vào repo.
+- **Phiếu:** soạn bản đầu Phiếu A, Phiếu B mục B0–B2, B7.1–B7.3, B8 (v1), Phiếu C mục C0–C2, C6–C9 từ số liệu trong report.
+
+Phần mình tự làm: trả lời các câu hỏi chốt kế hoạch (phân vai, repo, thứ tự làm), quyết định chọn "Thu hẹp" ở v1 sau khi
+nghe lý do, tự chạy mọi lệnh git (commit, push, gộp nhánh) và lệnh chốt vòng 1 `lab10.checkpoint`, đọc lại thay đổi trước
+mỗi commit.
+
 ### Exit ticket
 
 - **Một điều học được:** cổng chỉ đáng tin khi nó đọc nguồn sự thật ngay trước lệnh ghi, không tin vào model. Cổng
